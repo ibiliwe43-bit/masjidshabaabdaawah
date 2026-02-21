@@ -1,59 +1,90 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>MASJID SHABAAB DAA'WAH</title>
-    <link rel="stylesheet" href="style.css">
+<title>Masjid Website</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
-<h1>MASJID SHABAAB DAA'WAH - Buhongwa Mwanza</h1>
+<h2>🔎 Search Audio</h2>
+<input type="text" id="search" placeholder="Search..." onkeyup="filterAudio()">
 
-<input type="text" id="search" placeholder="Tafuta audio...">
+<hr>
 
+<h2>🎵 Audios</h2>
 <div id="audioList"></div>
 
+<hr>
+
+<h2>🕌 Ratiba ya Swala</h2>
+<div id="schedule"></div>
+
 <script type="module">
-import { db } from './firebase.js';
-import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-const audioList = document.getElementById("audioList");
-const searchInput = document.getElementById("search");
+const firebaseConfig = {
+apiKey: "WEKA_API_KEY",
+authDomain: "masjid-shabaab-daa-wah-4f49b.firebaseapp.com",
+projectId: "masjid-shabaab-daa-wah-4f49b",
+storageBucket: "masjid-shabaab-daa-wah-4f49b.firebasestorage.app",
+messagingSenderId: "287019093594",
+appId: "1:287019093594:web:1b343aed72f3433b36d263"
+};
 
-let allAudios = [];
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-async function loadAudios() {
-    const querySnapshot = await getDocs(collection(db, "audios"));
-    allAudios = [];
-    querySnapshot.forEach(doc => {
-        allAudios.push(doc.data());
-    });
-    displayAudios(allAudios);
+let audios = [];
+
+async function loadAudios(){
+const snapshot = await getDocs(collection(db,"audios"));
+audios = snapshot.docs.map(doc => doc.data());
+displayAudios(audios);
 }
 
-function displayAudios(audios) {
-    audioList.innerHTML = "";
-    audios.forEach(audio => {
-        audioList.innerHTML += `
-            <div>
-                <h3>${audio.title}</h3>
-                <p>${audio.category}</p>
-                <audio controls src="${audio.url}"></audio>
-                <hr>
-            </div>
-        `;
-    });
-}
-
-searchInput.addEventListener("input", () => {
-    const keyword = searchInput.value.toLowerCase();
-    const filtered = allAudios.filter(a =>
-        a.title.toLowerCase().includes(keyword) ||
-        a.category.toLowerCase().includes(keyword)
-    );
-    displayAudios(filtered);
+function displayAudios(list){
+let html = "";
+list.forEach(a=>{
+html += `
+<h3>${a.title}</h3>
+<p>${a.category}</p>
+<audio controls>
+<source src="${a.audio}">
+</audio>
+<br>
+<a href="${a.audio}" download>⬇ Download</a>
+<hr>
+`;
 });
+document.getElementById("audioList").innerHTML = html;
+}
+
+window.filterAudio = function(){
+const value = document.getElementById("search").value.toLowerCase();
+const filtered = audios.filter(a =>
+a.title.toLowerCase().includes(value)
+);
+displayAudios(filtered);
+}
+
+async function loadSchedule(){
+const snap = await getDoc(doc(db,"salah_schedule","today"));
+if(snap.exists()){
+const data = snap.data();
+document.getElementById("schedule").innerHTML = `
+Fajr: ${data.fajr}<br>
+Dhuhr: ${data.dhuhr}<br>
+Asr: ${data.asr}<br>
+Maghrib: ${data.maghrib}<br>
+Isha: ${data.isha}
+`;
+}
+}
 
 loadAudios();
+loadSchedule();
+
 </script>
 
 </body>
