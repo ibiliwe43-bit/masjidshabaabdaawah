@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MASJID SHABAAB DAA'WAH</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>MASJID SHABAAB DAA'WAH - Buhongwa Mwanza</h1>
+
+<input type="text" id="search" placeholder="Tafuta audio...">
+
+<div id="audioList"></div>
+
+<script type="module">
+import { db } from './firebase.js';
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const audioList = document.getElementById("audioList");
+const searchInput = document.getElementById("search");
+
+let allAudios = [];
+
+async function loadAudios() {
+    const querySnapshot = await getDocs(collection(db, "audios"));
+    allAudios = [];
+    querySnapshot.forEach(doc => {
+        allAudios.push(doc.data());
+    });
+    displayAudios(allAudios);
+}
+
+function displayAudios(audios) {
+    audioList.innerHTML = "";
+    audios.forEach(audio => {
+        audioList.innerHTML += `
+            <div>
+                <h3>${audio.title}</h3>
+                <p>${audio.category}</p>
+                <audio controls src="${audio.url}"></audio>
+                <hr>
+            </div>
+        `;
+    });
+}
+
+searchInput.addEventListener("input", () => {
+    const keyword = searchInput.value.toLowerCase();
+    const filtered = allAudios.filter(a =>
+        a.title.toLowerCase().includes(keyword) ||
+        a.category.toLowerCase().includes(keyword)
+    );
+    displayAudios(filtered);
+});
+
+loadAudios();
+</script>
+
+</body>
+</html>
