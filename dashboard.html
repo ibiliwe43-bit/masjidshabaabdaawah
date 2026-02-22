@@ -1,28 +1,108 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Dashboard</title>
+<title>Admin Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } 
+from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyCP9rS5F84AuO5QFyGv355GLlKxrfF7UT4",
+authDomain: "masjid-shabaab-daa-wah.firebaseapp.com",
+projectId: "masjid-shabaab-daa-wah",
+storageBucket: "masjid-shabaab-daa-wah.firebasestorage.app",
+messagingSenderId: "615883244718",
+appId: "G-NERS9HHKLE"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* ================= LOGIN PROTECTION ================= */
+
 const urlParams = new URLSearchParams(window.location.search);
-
 if(urlParams.get("auth") !== "ok"){
 window.location.href = "admin.html";
 }
+
+/* ================= UPLOAD AUDIO ================= */
+
+window.saveAudio = async function(){
+
+const title = document.getElementById("title").value;
+const audio = document.getElementById("audio").value;
+
+await addDoc(collection(db,"audios"),{
+title:title,
+audio:audio,
+date:new Date()
+});
+
+alert("Audio Saved!");
+loadAudios();
+}
+
+/* ================= LOAD AUDIO LIST ================= */
+
+async function loadAudios(){
+
+const querySnapshot = await getDocs(collection(db,"audios"));
+const list = document.getElementById("audioList");
+
+list.innerHTML = "";
+
+querySnapshot.forEach((docSnap)=>{
+
+list.innerHTML += `
+<div style="border:1px solid #ccc; padding:10px; margin:5px;">
+<h4>${docSnap.data().title}</h4>
+<a href="${docSnap.data().audio}" target="_blank">Play</a>
+<br><br>
+<button onclick="deleteAudio('${docSnap.id}')">Delete</button>
+</div>
+`;
+
+});
+
+}
+
+window.deleteAudio = async function(id){
+
+await deleteDoc(doc(db,"audios",id));
+alert("Deleted!");
+loadAudios();
+}
+
+window.onload = loadAudios;
+
 </script>
 
-<h2>Welcome Admin ✅</h2>
+</head>
+<body>
 
-<p>Dashboard yako iko hapa.</p>
+<h2>🔥 Admin Dashboard</h2>
+
+<h3>Upload Audio</h3>
+
+<input type="text" id="title" placeholder="Audio Title"><br><br>
+<input type="text" id="audio" placeholder="Audio Link"><br><br>
+<button onclick="saveAudio()">Save Audio</button>
+
+<hr>
+
+<h3>Audio List</h3>
+<div id="audioList"></div>
+
+<hr>
 
 <button onclick="logout()">Logout</button>
 
 <script>
 function logout(){
-window.location.href = "admin.html";
+window.location.href="admin.html";
 }
 </script>
 
