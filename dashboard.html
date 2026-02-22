@@ -88,7 +88,7 @@ window.onload = loadAudios;
 
 <input type="file" id="audioFile" accept="audio/*"><br><br>
 
-<button onclick="uploadToCloudinary()">Upload Audio</button>
+<button id="uploadBtn">Upload Audio</button>
 
 <hr>
 
@@ -150,6 +150,48 @@ console.log(error);
 }
 
 </script>
+<script>
+document.getElementById("uploadBtn").addEventListener("click", async function(){
 
+const fileInput = document.getElementById("audioFile");
+const title = document.getElementById("title").value;
+const category = document.getElementById("category").value;
+const file = fileInput.files[0];
+
+if(!file){
+alert("Select Audio File");
+return;
+}
+
+const formData = new FormData();
+formData.append("file", file);
+formData.append("upload_preset", "ml_default");
+
+try{
+
+const response = await fetch(
+"https://api.cloudinary.com/v1_1/drlltmnlb/upload",
+{
+method:"POST",
+body:formData
+}
+);
+
+const data = await response.json();
+
+if(!data.secure_url){
+alert("Upload Failed ❌");
+return;
+}
+
+alert("Upload Success ✅");
+
+}catch(error){
+alert("Error: " + error.message);
+console.log(error);
+}
+
+});
+</script>
 </body>
 </html>
