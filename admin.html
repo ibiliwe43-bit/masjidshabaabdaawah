@@ -1,1 +1,57 @@
-
+<!DOCTYPE html>  <html>  
+<head>  
+<title>Admin Login</title>  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">  <style>  
+body{  
+font-family: Arial;  
+background:#f4f6f9;  
+display:flex;  
+justify-content:center;  
+align-items:center;  
+height:100vh;  
+}  
+  
+.login-box{  
+background:white;  
+padding:20px;  
+border-radius:10px;  
+box-shadow:0 4px 8px rgba(0,0,0,0.1);  
+width:90%;  
+max-width:300px;  
+text-align:center;  
+}  
+  
+input{  
+width:100%;  
+padding:10px;  
+margin-top:10px;  
+border-radius:6px;  
+border:1px solid #ccc;  
+}  
+  
+button{  
+margin-top:15px;  
+padding:10px;  
+width:100%;  
+background:#1e7e34;  
+color:white;  
+border:none;  
+border-radius:6px;  
+}  
+</style>  </head>  
+<body>  <div class="login-box">  
+<h2>Admin Login</h2>  
+<input type="password" id="password" placeholder="Enter Password">  
+<button onclick="checkPassword()">Login</button>  
+</div>  <script>  
+function checkPassword(){  
+const pass=document.getElementById("password").value;  
+  
+if(pass==="Shabaab2026"){   // 🔐 BADILISHA HAPA  
+window.location.href="dashboard.html";  
+}else{  
+alert("Wrong Password!");  
+}  
+}  
+</script>  </body>  
+</html>
