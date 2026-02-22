@@ -1,79 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin Panel</title>
+<title>Admin Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+font-family: Arial;
+background:#f4f6f9;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.login-box{
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 4px 8px rgba(0,0,0,0.1);
+width:90%;
+max-width:300px;
+text-align:center;
+}
+
+input{
+width:100%;
+padding:10px;
+margin-top:10px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+button{
+margin-top:15px;
+padding:10px;
+width:100%;
+background:#1e7e34;
+color:white;
+border:none;
+border-radius:6px;
+}
+</style>
+
 </head>
 <body>
 
-<h2>Upload Audio</h2>
+<div class="login-box">
+<h2>Admin Login</h2>
+<input type="password" id="password" placeholder="Enter Password">
+<button onclick="checkPassword()">Login</button>
+</div>
 
-<input type="text" id="title" placeholder="Title"><br><br>
+<script>
+function checkPassword(){
+const pass=document.getElementById("password").value;
 
-<select id="category">
-<option value="Khutbah">Khutbah</option>
-<option value="Jumamosi">Darsa Jumamosi</option>
-<option value="Jumapili">Darsa Jumapili</option>
-<option value="Ramadhani">Ramadhani</option>
-</select><br><br>
-
-<input type="text" id="audio" placeholder="Audio Link (Direct Download Link)"><br><br>
-
-<button onclick="saveAudio()">Save Audio</button>
-
-<hr>
-
-<h2>Update Ratiba ya Swala</h2>
-
-<input type="text" id="fajr" placeholder="Fajr"><br><br>
-<input type="text" id="dhuhr" placeholder="Dhuhr"><br><br>
-<input type="text" id="asr" placeholder="Asr"><br><br>
-<input type="text" id="maghrib" placeholder="Maghrib"><br><br>
-<input type="text" id="isha" placeholder="Isha"><br><br>
-
-<button onclick="saveSchedule()">Save Ratiba</button>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import { getFirestore, collection, addDoc, setDoc, doc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
-
-const firebaseConfig = {
-apiKey: "AIzaSyDsuZ_Ks_VMEo62P-9n0G2Q-UShD_FD6rE",
-authDomain: "masjid-shabaab-daa-wah-4f49b.firebaseapp.com",
-projectId: "masjid-shabaab-daa-wah-4f49b",
-storageBucket: "masjid-shabaab-daa-wah-4f49b.firebasestorage.app",
-messagingSenderId: "287019093594",
-appId: "1:287019093594:web:1b343aed72f3433b36d263"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-window.saveAudio = async function(){
-
-await addDoc(collection(db,"audios"),{
-title: document.getElementById("title").value,
-category: document.getElementById("category").value,
-audio: document.getElementById("audio").value,
-date: new Date()
-});
-
-alert("Audio Saved!");
-};
-
-window.saveSchedule = async function(){
-
-await setDoc(doc(db,"salah_schedule","today"),{
-fajr: document.getElementById("fajr").value,
-dhuhr: document.getElementById("dhuhr").value,
-asr: document.getElementById("asr").value,
-maghrib: document.getElementById("maghrib").value,
-isha: document.getElementById("isha").value
-});
-
-alert("Ratiba Saved!");
-};
-
+if(pass==="Shabaab2026"){   // 🔐 BADILISHA HAPA
+window.location.href="dashboard.html";
+}else{
+alert("Wrong Password!");
+}
+}
 </script>
 
 </body>
