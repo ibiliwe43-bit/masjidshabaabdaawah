@@ -7,25 +7,22 @@
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } 
-from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import { getDatabase, ref, push, onValue, remove } 
+from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
 
-import { getStorage, ref, uploadBytes, getDownloadURL } 
-from "https://www.gstatic.com/firebasejs/12.9.0/firebase-storage.js";
-
-/* 🔥 WEKA CONFIG YAKO HAPA */
+/* 🔥 FIREBASE CONFIG */
 const firebaseConfig = {
-apiKey: "AIzaSyCP9rS5F84AuO5QFyGv355GLlKxrfF7UT4",
-authDomain: "masjid-shabaab-daa-wah.firebaseapp.com",
-projectId: "615883244718",
-storageBucket: "masjid-shabaab-daa-wah.firebasestorage.app",
-messagingSenderId: "G-NERS9HHKLE",
-appId: "1:615883244718:web:d9970c4ae55cb247c6d93f"
+apiKey: "AIzaSyCRKV93NJ7YX1zP7xAiG340mTXDTIEweaQ",
+authDomain: "masjid-shabaab.firebaseapp.com",
+databaseURL: "https://masjid-shabaab-default-rtdb.firebaseio.com/",
+projectId: "masjid-shabaab",
+storageBucket: "masjid-shabaab.firebasestorage.app",
+messagingSenderId: "590758366670",
+appId: "1:590758366670:web:2fe678c410285fab5fef9f"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const storage = getStorage(app);
+const db = getDatabase(app);
 
 /* 🔐 LOGIN PROTECTION */
 const urlParams = new URLSearchParams(window.location.search);
@@ -35,15 +32,17 @@ window.location.href = "admin.html";
 
 /* ================= LOAD AUDIO ================= */
 
-window.loadAudios = async function(){
+window.loadAudios = function(){
 
-const querySnapshot = await getDocs(collection(db,"audios"));
+const dbRef = ref(db,"audios");
+
+onValue(dbRef,(snapshot)=>{
 const list = document.getElementById("audioList");
 list.innerHTML = "";
 
-querySnapshot.forEach((docSnap)=>{
+snapshot.forEach(child => {
 
-const data = docSnap.data();
+const data = child.val();
 
 list.innerHTML += `
 <div style="border:1px solid #ccc;padding:10px;margin:10px;">
@@ -53,20 +52,18 @@ list.innerHTML += `
 <source src="${data.audio}">
 </audio>
 <br><br>
-<button onclick="deleteAudio('${docSnap.id}')">Delete</button>
+<button onclick="deleteAudio('${child.key}')">Delete</button>
 </div>
 `;
 
 });
+});
 
 }
 
-/* ================= DELETE ================= */
-
-window.deleteAudio = async function(id){
-await deleteDoc(doc(db,"audios",id));
+window.deleteAudio = function(id){
+remove(ref(db,"audios/"+id));
 alert("Deleted ✅");
-loadAudios();
 }
 
 window.onload = loadAudios;
@@ -91,109 +88,66 @@ window.onload = loadAudios;
 
 <input type="file" id="audioFile" accept="audio/*"><br><br>
 
-<button onclick="saveAudio()">Save Audio</button>
-
-<hr>
-
-<h3>Filter</h3>
-<select onchange="filterCategory(this.value)">
-<option value="">All</option>
-<option value="Khutbah">Khutbah</option>
-<option value="Jumamosi">Jumamosi</option>
-<option value="Jumapili">Jumapili</option>
-<option value="Ramadhani">Ramadhani</option>
-</select>
+<button onclick="uploadToCloudinary()">Upload Audio</button>
 
 <hr>
 
 <h3>Audio List</h3>
 <div id="audioList"></div>
 
-<hr>
-
-<button onclick="window.location.href='admin.html'">Logout</button>
-
 <script>
 
-/* ================= SAVE AUDIO ================= */
+/* ================= CLOUDINARY UPLOAD ================= */
 
-async function saveAudio(){
+async function uploadToCloudinary(){
 
+const fileInput = document.getElementById("audioFile");
 const title = document.getElementById("title").value;
 const category = document.getElementById("category").value;
-const fileInput = document.getElementById("audioFile");
-const file = fileInput.files[0];
 
-if(!title){
-alert("Enter Title");
-return;
-}
+const file = fileInput.files[0];
 
 if(!file){
 alert("Select Audio File");
 return;
 }
 
+const formData = new FormData();
+formData.append("file", file);
+formData.append("upload_preset", "UPLOAD_PRESET_YAKO");
+
 try{
 
-const storageRef = ref(storage, "audios/" + Date.now() + "_" + file.name);
+const response = await fetch(
+"https://api.cloudinary.com/v1_1/drlltmnlb/upload",
+{
+method:"POST",
+body:formData
+}
+);
 
-await uploadBytes(storageRef, file);
-const url = await getDownloadURL(storageRef);
+const data = await response.json();
 
-await addDoc(collection(db,"audios"),{
+const audioUrl = data.secure_url;
+
+/* Save To Firebase Realtime */
+push(ref(db,"audios"),{
 title:title,
 category:category,
-audio:url,
-date:new Date().toISOString()
+audio:audioUrl
 });
 
-alert("Audio Uploaded ✅");
+alert("Uploaded Successfully ✅");
 
 fileInput.value = "";
 document.getElementById("title").value = "";
 
-loadAudios();
-
 }catch(error){
+alert("Upload Failed ❌\n" + error.message);
 console.log(error);
-alert("Upload Failed ❌");
 }
 
 }
-
-/* ================= FILTER ================= */
-
-async function filterCategory(category){
-
-const querySnapshot = await getDocs(collection(db,"audios"));
-const list = document.getElementById("audioList");
-list.innerHTML = "";
-
-querySnapshot.forEach((docSnap)=>{
-
-const data = docSnap.data();
-
-if(category === "" || data.category === category){
-
-list.innerHTML += `
-<div style="border:1px solid #ccc;padding:10px;margin:10px;">
-<h4>${data.title}</h4>
-<p>Category: ${data.category}</p>
-<audio controls>
-<source src="${data.audio}">
-</audio>
-<br><br>
-<button onclick="deleteAudio('${docSnap.id}')">Delete</button>
-</div>
-`;
-
-}
-
-});
-}
-
-window.filterCategory = filterCategory;
 
 </script>
 
