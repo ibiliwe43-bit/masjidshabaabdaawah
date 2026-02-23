@@ -206,8 +206,22 @@ container.innerHTML += `
 <div class="audio-card">
 <h3>${audio.title}</h3>
 <p>${audio.description || ""}</p>
-<audio controls src="${audio.url}"></audio><br>
+
+<audio controls src="${audio.url}"
+onplay="increaseView('${audio.id}')">
+</audio>
+<br>
+
+<span style="font-size:14px;color:gray;">
+👁 ${audio.views || 0} Views
+</span>
+<br>
+
 <a href="${audio.url}" download>Download</a>
+
+</div>
+`;
+});
 </div>
 `;
 });
