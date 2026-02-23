@@ -1,32 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Admin - Masjid Shabaab</title>
+  <title>Admin Panel</title>
+  <style>
+    body{font-family:Arial;padding:20px;background:#f4f4f4;}
+    input,select,textarea{width:100%;padding:8px;margin-bottom:10px;}
+    button{padding:8px 15px;background:#00695c;color:white;border:none;border-radius:5px;}
+    .box{background:white;padding:15px;margin-top:15px;border-radius:8px;}
+    .delete{background:red;margin-top:10px;}
+  </style>
 </head>
 <body>
 
-<script>
-// 🔐 BADILISHA PASSWORD HAPA
-const correctPassword = "Shabaab2026";
+<h2>Admin - Weka Audio</h2>
 
-const userPassword = prompt("Weka Password kuingia Admin:");
+<input type="text" id="title" placeholder="Jina la Audio">
 
-if (userPassword !== correctPassword) {
-  document.write("<h2>Access Denied</h2>");
-  throw new Error("Access Denied");
-}
-</script>
+<textarea id="description" placeholder="Maelezo ya audio"></textarea>
 
-<h2>Admin - Weka Audio Link</h2>
+<select id="category">
+  <option value="darsa">Darsa</option>
+  <option value="jumaa">Khutbah Ijumaa</option>
+  <option value="eid">Khutbah Eid</option>
+</select>
 
-<input type="text" id="title" placeholder="Jina la Audio"><br><br>
-<input type="text" id="link" placeholder="Weka Link ya Audio (mp3)"><br><br>
+<input type="text" id="link" placeholder="Weka Link ya Audio (mp3)">
 
 <button onclick="saveAudio()">Save Audio</button>
 
+<h3>Audio Zote</h3>
+<div id="audioList"></div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+import { getDatabase, ref, push, onValue, remove } 
+from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBrgOTZN04zoRlpDzOgHFlK_5HvJW6pxD0",
@@ -41,23 +49,51 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-window.saveAudio = function() {
+window.saveAudio = function(){
   const title = document.getElementById("title").value;
+  const description = document.getElementById("description").value;
+  const category = document.getElementById("category").value;
   const link = document.getElementById("link").value;
 
-  if(title === "" || link === "") {
+  if(!title || !link){
     alert("Jaza sehemu zote");
     return;
   }
 
-  push(ref(db, "audios"), {
-    title: title,
-    url: link
+  push(ref(db,"audios"),{
+    title:title,
+    description:description,
+    category:category,
+    url:link,
+    date: Date.now()
   });
 
-  alert("Audio imehifadhiwa!");
-  document.getElementById("title").value = "";
-  document.getElementById("link").value = "";
+  alert("Imehifadhiwa!");
+  document.getElementById("title").value="";
+  document.getElementById("description").value="";
+  document.getElementById("link").value="";
+};
+
+onValue(ref(db,"audios"),(snapshot)=>{
+  const container=document.getElementById("audioList");
+  container.innerHTML="";
+
+  snapshot.forEach(child=>{
+    const data=child.val();
+    container.innerHTML+=`
+      <div class="box">
+        <b>${data.title}</b>
+        <p>${data.description || ""}</p>
+        <small>${data.category}</small><br>
+        <button class="delete" onclick="deleteAudio('${child.key}')">Delete</button>
+      </div>
+    `;
+  });
+});
+
+window.deleteAudio=function(id){
+  remove(ref(db,"audios/"+id));
+  alert("Imefutwa");
 };
 </script>
 
