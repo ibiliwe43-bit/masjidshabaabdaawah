@@ -121,7 +121,6 @@ Darsa za Mwezi wa Ramadhani
 
 <!-- ================= FIREBASE ================= -->
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
 
@@ -138,68 +137,26 @@ appId: "1:1069424481338:web:4eebe45e31ec3c24aad103"
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-let allAudios = [];
-let currentCategory = "";
+const box = document.getElementById("ratibaBox");
 
-/* LOAD AUDIO */
-onValue(ref(db,"audios"), snapshot=>{
-allAudios = [];
-snapshot.forEach(child=>{
-allAudios.push({ id:child.key, ...child.val() });
-});
-displayAudios();
-});
+onValue(ref(db,"ratiba"), snapshot => {
 
-/* DISPLAY AUDIO */
-function displayAudios(){
-const container=document.getElementById("audioList");
-if(!container) return;
+console.log("🔥 RAW DATA:", snapshot.val());
 
-container.innerHTML="";
-
-let filtered = allAudios.filter(a =>
-currentCategory === "" || a.category === currentCategory
-);
-
-filtered.reverse().forEach(audio=>{
-container.innerHTML += `
-<div class="audio-card">
-<h3>${audio.title}</h3>
-<p>${audio.description || ""}</p>
-<audio controls src="${audio.url}"></audio><br>
-<a href="${audio.url}" download>Download</a>
-</div>
+if(snapshot.exists()){
+const data = snapshot.val();
+box.innerHTML = `
+Fajr – ${data.fajr || "-"}<br>
+Dhuhr – ${data.dhuhr || "-"}<br>
+Asr – ${data.asr || "-"}<br>
+Maghrib – ${data.maghrib || "-"}<br>
+Isha – ${data.isha || "-"}
 `;
-});
+} else {
+box.innerHTML = "⚠️ Hakuna ratiba kwenye database";
 }
 
-/* CATEGORY CLICK */
-window.openCategory=function(cat){
-currentCategory=cat;
-displayAudios();
-};
-
-/* SEARCH */
-window.searchAudio=function(){
-const value=document.getElementById("searchInput").value.toLowerCase();
-const container=document.getElementById("audioList");
-if(!container) return;
-
-container.innerHTML="";
-
-allAudios
-.filter(a=>a.title.toLowerCase().includes(value))
-.forEach(audio=>{
-container.innerHTML += `
-<div class="audio-card">
-<h3>${audio.title}</h3>
-<p>${audio.description || ""}</p>
-<audio controls src="${audio.url}"></audio>
-</div>
-`;
 });
-};
-
 </script>
 
 </body>
