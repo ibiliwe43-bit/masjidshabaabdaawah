@@ -158,6 +158,87 @@ box.innerHTML = "⚠️ Hakuna ratiba kwenye database";
 
 });
 </script>
+  <script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyCRKV93NJ7YX1zP7xAiG340mTXDTIEweaQ",
+authDomain: "masjidshabaab.firebaseapp.com",
+databaseURL: "https://masjidshabaab-default-rtdb.firebaseio.com/",
+projectId: "masjidshabaab",
+storageBucket: "masjidshabaab.firebasestorage.app",
+messagingSenderId: "1069424481338",
+appId: "1:1069424481338:web:4eebe45e31ec3c24aad103"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let allAudios = [];
+let currentCategory = "";
+
+/* LOAD AUDIO */
+onValue(ref(db,"audios"), snapshot=>{
+allAudios = [];
+snapshot.forEach(child=>{
+allAudios.push({ id:child.key, ...child.val() });
+});
+displayAudios();
+});
+
+/* DISPLAY AUDIO */
+function displayAudios(){
+
+const container = document.getElementById("audioList");
+if(!container) return;
+
+container.innerHTML = "";
+
+let filtered = allAudios.filter(a =>
+currentCategory === "" ||
+(a.category && a.category.toLowerCase() === currentCategory.toLowerCase())
+);
+
+filtered.reverse().forEach(audio=>{
+container.innerHTML += `
+<div class="audio-card">
+<h3>${audio.title}</h3>
+<p>${audio.description || ""}</p>
+<audio controls src="${audio.url}"></audio><br>
+<a href="${audio.url}" download>Download</a>
+</div>
+`;
+});
+}
+
+/* CATEGORY */
+window.openCategory = function(cat){
+currentCategory = cat;
+displayAudios();
+};
+
+/* SEARCH */
+window.searchAudio = function(){
+const value = document.getElementById("searchInput").value.toLowerCase();
+const container = document.getElementById("audioList");
+container.innerHTML = "";
+
+allAudios
+.filter(a => a.title.toLowerCase().includes(value))
+.forEach(audio=>{
+container.innerHTML += `
+<div class="audio-card">
+<h3>${audio.title}</h3>
+<p>${audio.description || ""}</p>
+<audio controls src="${audio.url}"></audio>
+</div>
+`;
+});
+};
+
+</script>
 
 </body>
 </html>
