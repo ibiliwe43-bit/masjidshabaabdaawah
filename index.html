@@ -156,6 +156,25 @@ Isha – ${data.isha || "-"}
 box.innerHTML = "⚠️ Hakuna ratiba kwenye database";
 }
 
+window.increaseView = function(id){
+
+import { ref, get, set } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+
+const audioRef = ref(db,"audios/"+id);
+
+get(audioRef).then(snapshot=>{
+if(snapshot.exists()){
+const data = snapshot.val();
+const newViews = (data.views || 0) + 1;
+
+set(audioRef,{
+...data,
+views:newViews
+});
+}
+});
+
+};
 });
 </script>
   <script type="module">
