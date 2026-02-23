@@ -1,11 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Admin - Upload Audio Link</title>
+  <title>Admin - Masjid Shabaab</title>
 </head>
 <body>
 
-<h2>Weka Audio Link</h2>
+<script>
+// 🔐 BADILISHA PASSWORD HAPA
+const correctPassword = "Shabaab2026";
+
+const userPassword = prompt("Weka Password kuingia Admin:");
+
+if (userPassword !== correctPassword) {
+  document.write("<h2>Access Denied</h2>");
+  throw new Error("Access Denied");
+}
+</script>
+
+<h2>Admin - Weka Audio Link</h2>
 
 <input type="text" id="title" placeholder="Jina la Audio"><br><br>
 <input type="text" id="link" placeholder="Weka Link ya Audio (mp3)"><br><br>
