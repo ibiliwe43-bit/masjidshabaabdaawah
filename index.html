@@ -119,13 +119,14 @@ Darsa za Mwezi wa Ramadhani
 <div id="audioList"></div>
 </div>
 
-<!-- FIREBASE SCRIPT -->
+<!-- ================= FIREBASE ================= -->
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
 
 const firebaseConfig = {
-apiKey: "AIzaSyBrgOtZN04zoRlpDzOgHFlK_5HvJW6pxD0",
+apiKey: "AIzaSyCRKV93NJ7YX1zP7xAiG340mTXDTIEweaQ",
 authDomain: "masjidshabaab.firebaseapp.com",
 databaseURL: "https://masjidshabaab-default-rtdb.firebaseio.com/",
 projectId: "masjidshabaab",
@@ -136,29 +137,6 @@ appId: "1:1069424481338:web:4eebe45e31ec3c24aad103"
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-
-const box = document.getElementById("ratibaBox");
-
-onValue(ref(db,"ratiba"), snapshot => {
-
-console.log("DATA FROM FIREBASE:", snapshot.val());
-
-const data = snapshot.val();
-
-if(data){
-box.innerHTML = `
-Fajr – ${data.fajr || "-"}<br>
-Dhuhr – ${data.dhuhr || "-"}<br>
-Asr – ${data.asr || "-"}<br>
-Maghrib – ${data.maghrib || "-"}<br>
-Isha – ${data.isha || "-"}
-`;
-} else {
-box.innerHTML = "Hakuna ratiba kwenye database.";
-}
-
-});
-</script>
 
 let allAudios = [];
 let currentCategory = "";
@@ -174,8 +152,9 @@ displayAudios();
 
 /* DISPLAY AUDIO */
 function displayAudios(){
-
 const container=document.getElementById("audioList");
+if(!container) return;
+
 container.innerHTML="";
 
 let filtered = allAudios.filter(a =>
@@ -204,6 +183,8 @@ displayAudios();
 window.searchAudio=function(){
 const value=document.getElementById("searchInput").value.toLowerCase();
 const container=document.getElementById("audioList");
+if(!container) return;
+
 container.innerHTML="";
 
 allAudios
