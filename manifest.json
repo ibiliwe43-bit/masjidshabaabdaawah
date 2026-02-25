@@ -1,27 +1,25 @@
 {
   "name": "Masjid Shabaab Daawah",
-  "short_name": "Masjid App",
+  "short_name": "Masjid",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "fullscreen"],
+  "orientation": "portrait",
   "theme_color": "#00695c",
   "background_color": "#ffffff",
-  "orientation": "portrait",
+  "description": "App rasmi ya Masjid Shabaab Daawah - Ratiba ya Swala, Darsa na Khutbah",
   "lang": "sw",
-  "scope": "/",
-  "description": "App rasmi ya Masjid Shabaab Daawah - Ratiba, Darsa na Khutbah",
-  "id": "/",
 
   "icons": [
-  {
-    "src": "/masjidshabaabdaawah/icon-192.png",
-    "sizes": "192x192",
-    "type": "image/png"
-  },
-  {
-    "src": "/masjidshabaabdaawah/icon-512.png",
-    "sizes": "512x512",
-    "type": "image/png"
-  }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
   ]
 }
