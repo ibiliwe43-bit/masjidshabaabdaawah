@@ -1,54 +1,45 @@
-<button id="installBtn" style="
-  padding:12px 20px;
-  background:#00695c;
-  color:white;
-  border:none;
-  border-radius:8px;
-  font-size:16px;
-  cursor:pointer;">
-  Install App
-</button>
 <!DOCTYPE html>
 <html lang="sw">
 <head>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#00695c">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Masjid Shabaab Daawah</title>
+
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#00695c">
 
 <style>
 body{
 margin:0;
 font-family:Arial;
 background:#f4f4f4;
-
 }
 
-/* HERO */
 .hero{
-background:url("mosque.jpg") center/cover no-repeat;
-height:230px;
+background:#00695c;
 color:white;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-text-shadow:2px 2px 6px black;
+padding:40px 15px;
+text-align:center;
 }
-.hero h1{margin:0;font-size:22px;}
 
-/* SECTION */
-.section{padding:15px;}
+.section{
+padding:15px;
+}
 
-/* RATIBA */
-#ratibaBox{
-background:white;
-padding:12px;
+button{
+cursor:pointer;
+}
+
+#installBtn{
+padding:12px 20px;
+background:#004d40;
+color:white;
+border:none;
 border-radius:8px;
+font-size:16px;
+display:none;
 }
 
-/* SEARCH */
 input{
 width:100%;
 padding:10px;
@@ -56,7 +47,6 @@ border-radius:6px;
 border:1px solid #ccc;
 }
 
-/* CATEGORIES */
 .categories button{
 width:100%;
 padding:12px;
@@ -65,10 +55,8 @@ border:none;
 background:#00695c;
 color:white;
 border-radius:6px;
-font-size:15px;
 }
 
-/* AUDIO CARD */
 .audio-card{
 background:white;
 padding:15px;
@@ -76,21 +64,33 @@ margin-bottom:15px;
 border-radius:8px;
 box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
-.audio-card h3{margin:0;}
+
+footer{
+background:#004d40;
+color:white;
+text-align:center;
+padding:20px;
+margin-top:30px;
+font-size:14px;
+}
 </style>
 </head>
 <body>
 
 <!-- HERO -->
 <div class="hero">
-<h1>MASJID SHABAAB DAAWAH</h1>
-<p>Buhongwa - Mwanza</p>
+<h2>MASJID SHABAAB DAAWAH</h2>
+<p>Buhongwa – Mwanza</p>
+</div>
+
+<!-- INSTALL BUTTON -->
+<div class="section" style="text-align:center;">
+<button id="installBtn">Install App</button>
 </div>
 
 <!-- SEARCH -->
 <div class="section">
-<input type="text"
-id="searchInput"
+<input type="text" id="searchInput"
 placeholder="Tafuta audio..."
 onkeyup="searchAudio()">
 </div>
@@ -98,9 +98,7 @@ onkeyup="searchAudio()">
 <!-- RATIBA -->
 <div class="section">
 <h3>Ratiba ya Swala</h3>
-<div id="ratibaBox">
-Inapakia ratiba...
-</div>
+<div id="ratibaBox">Inapakia ratiba...</div>
 </div>
 
 <!-- CATEGORIES -->
@@ -121,9 +119,8 @@ Khutbah za Eid
 </button>
 
 <button onclick="openCategory('ramadhan')">
-Darsa za Mwezi wa Ramadhani
+Darsa za Ramadhani
 </button>
-
 </div>
 </div>
 
@@ -132,8 +129,14 @@ Darsa za Mwezi wa Ramadhani
 <div id="audioList"></div>
 </div>
 
-<!-- ================= FIREBASE ================= -->
+<!-- FOOTER -->
+<footer>
+<p>© 2026 Masjid Shabaab Daawah</p>
+<p>Buhongwa – Mwanza</p>
+<p>Designed for Daawah Purpose</p>
+</footer>
 
+<!-- ================= FIREBASE ================= -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
@@ -144,35 +147,32 @@ authDomain: "masjidshabaab.firebaseapp.com",
 databaseURL: "https://masjidshabaab-default-rtdb.firebaseio.com/",
 projectId: "masjidshabaab",
 storageBucket: "masjidshabaab.firebasestorage.app",
-messagingSenderId: "1069424481338",
-appId: "1:1069424481338:web:4eebe45e31ec3c24aad103"
+messagingSenderId: "590758366670",
+appId: "1:590758366670:web:2fe678c410285fab5fef9f"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ================= RATIBA ================= */
-const box = document.getElementById("ratibaBox");
+/* ===== RATIBA ===== */
+const ratibaBox = document.getElementById("ratibaBox");
 
-onValue(ref(db,"ratiba"), snapshot => {
-
+onValue(ref(db,"ratiba"), snapshot=>{
 if(snapshot.exists()){
 const data = snapshot.val();
-box.innerHTML = `
+ratibaBox.innerHTML = `
 Fajr – ${data.fajr || "-"}<br>
 Dhuhr – ${data.dhuhr || "-"}<br>
 Asr – ${data.asr || "-"}<br>
 Maghrib – ${data.maghrib || "-"}<br>
 Isha – ${data.isha || "-"}
 `;
-} else {
-box.innerHTML = "⚠️ Hakuna ratiba kwenye database";
+}else{
+ratibaBox.innerHTML = "Hakuna ratiba";
 }
-
 });
 
-/* ================= AUDIOS ================= */
-
+/* ===== AUDIOS ===== */
 let allAudios = [];
 let currentCategory = "";
 
@@ -229,49 +229,22 @@ container.innerHTML += `
 });
 };
 
-</script>
-<!-- FOOTER -->
-<footer style="
-background:#004d40;
-color:white;
-text-align:center;
-padding:20px 15px;
-margin-top:30px;
-font-size:14px;
-">
-
-<p style="margin:5px 0;">
-© 2026 <strong>Masjid Shabaab Daawah</strong>
-</p>
-
-<p style="margin:5px 0;">
-Buhongwa – Mwanza, Tanzania
-</p>
-
-<p style="margin:5px 0;font-size:12px;color:#c8e6c9;">
-Designed & Developed for Daawah Purpose
-</p>
-
-</footer>
-<script>
+/* ===== INSTALL BUTTON ===== */
 let deferredPrompt;
-const installBtn = document.getElementById('installBtn');
-installBtn.style.display = "none";
+const installBtn = document.getElementById("installBtn");
 
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  installBtn.style.display = "inline-block";
+window.addEventListener("beforeinstallprompt", (e)=>{
+e.preventDefault();
+deferredPrompt = e;
+installBtn.style.display = "inline-block";
 });
 
-installBtn.addEventListener('click', () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-  } else {
-    alert("Tafadhali tumia Google Chrome ku-install app.");
-  }
+installBtn.addEventListener("click", ()=>{
+if(deferredPrompt){
+deferredPrompt.prompt();
+}
 });
 </script>
-  
+
 </body>
 </html>
