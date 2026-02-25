@@ -256,23 +256,22 @@ Designed & Developed for Daawah Purpose
 <script>
 let deferredPrompt;
 const installBtn = document.getElementById('installBtn');
+installBtn.style.display = "none";
 
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  installBtn.style.display = 'block';
+  installBtn.style.display = "inline-block";
 });
 
-installBtn.addEventListener('click', async () => {
+installBtn.addEventListener('click', () => {
   if (deferredPrompt) {
     deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      console.log('User accepted install');
-    }
-    deferredPrompt = null;
+  } else {
+    alert("Tafadhali tumia Google Chrome ku-install app.");
   }
 });
 </script>
+  
 </body>
 </html>
