@@ -253,5 +253,40 @@ deferredPrompt.prompt();
 });
 </script>
 
+  <!-- ===== AUTO LOAD AUDIO FROM GITHUB FOLDER ===== -->
+<script>
+fetch("https://api.github.com/repos/masjidshabaabdaawah/masjidshabaabdaawah.github.io/contents/audio")
+.then(res => res.json())
+.then(files => {
+
+const container = document.getElementById("audioList");
+
+files.forEach(file => {
+
+if(file.name && file.name.endsWith(".mp3")){
+
+container.innerHTML += `
+<div class="audio-card">
+<h3>${file.name}</h3>
+
+<audio controls style="width:100%;">
+<source src="${file.download_url}" type="audio/mpeg">
+</audio>
+
+<br><br>
+
+<a href="${file.download_url}" download>
+Download
+</a>
+
+</div>
+`;
+
+}
+
+});
+
+});
+</script>
 </body>
 </html>
