@@ -25,8 +25,7 @@ button{padding:8px 15px;background:#00695c;color:white;border:none;border-radius
 
 <input type="file" id="audioFile" accept="audio/*">
 
-<button onclick="saveAudio()">Upload Audio</button>
-
+<button id="uploadBtn">Upload Audio</button>
 <hr>
 
 <h2>Ratiba ya Swala (Edit)</h2>
@@ -57,6 +56,53 @@ storageBucket: "masjidshabaab.firebasestorage.app",
 messagingSenderId: "1069424481338",
 appId: "1:1069424481338:web:4eebe45e31ec3c24aad103"
 };
+  /* 🔥 BUTTON EVENT */
+document.getElementById("uploadBtn").addEventListener("click", async () => {
+
+const file = document.getElementById("audioFile").files[0];
+
+if(!file){
+alert("Chagua audio kwanza!");
+return;
+}
+
+const title = document.getElementById("title").value;
+const description = document.getElementById("description").value;
+const category = document.getElementById("category").value;
+
+/* Upload to Cloudinary */
+const cloudName = "djfwodjwc";
+const uploadPreset = "audio_upload";
+
+const formData = new FormData();
+formData.append("file", file);
+formData.append("upload_preset", uploadPreset);
+
+const res = await fetch(
+`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
+{
+method:"POST",
+body:formData
+}
+);
+
+const data = await res.json();
+const audioURL = data.secure_url;
+
+/* Save to Firebase */
+import { push, ref } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+
+push(ref(db,"audios"),{
+title:title,
+description:description,
+category:category,
+url:audioURL,
+date:Date.now()
+});
+
+alert("✅ Audio Imeupload Kikamilifu!");
+
+});
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
