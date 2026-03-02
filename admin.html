@@ -4,8 +4,8 @@
 <title>Admin Panel</title>
 <style>
 body{font-family:Arial;padding:20px;background:#f4f4f4;}
-input,select{width:100%;padding:8px;margin-bottom:10px;}
-button{padding:8px 15px;background:#00695c;color:white;border:none;border-radius:5px;}
+input,select,textarea{width:100%;padding:8px;margin-bottom:10px;}
+button{padding:8px 15px;background:#00695c;color:white;border:none;border-radius:5px;cursor:pointer;}
 .box{background:white;padding:15px;border-radius:8px;margin-top:15px;}
 </style>
 </head>
@@ -23,9 +23,9 @@ button{padding:8px 15px;background:#00695c;color:white;border:none;border-radius
 <option value="ramadhan">Darsa za Ramadhani</option>
 </select>
 
-<input type="text" id="link" placeholder="Link ya Audio">
+<input type="file" id="audioFile" accept="audio/*">
 
-<button onclick="saveAudio()">Save Audio</button>
+<button onclick="saveAudio()">Upload Audio</button>
 
 <hr>
 
@@ -49,7 +49,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebas
 import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
 
 const firebaseConfig = {
-apiKey: "AIzaSyBrgOtZN04zoRlpDzOgHFlK_5HvJW6pxD0",
+apiKey: "YOUR_API_KEY",
 authDomain: "masjidshabaab.firebaseapp.com",
 databaseURL: "https://masjidshabaab-default-rtdb.firebaseio.com/",
 projectId: "masjidshabaab",
@@ -61,16 +61,48 @@ appId: "1:1069424481338:web:4eebe45e31ec3c24aad103"
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+/* 🔥 CLOUDINARY UPLOAD */
+async function uploadToCloudinary(file){
+
+const cloudName = "djfwodjwc";  // badilisha kama ni tofauti
+const uploadPreset = "audio_upload"; // hakikisha ume-create unsigned preset
+
+const formData = new FormData();
+formData.append("file", file);
+formData.append("upload_preset", uploadPreset);
+
+const response = await fetch(
+`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
+{
+method: "POST",
+body: formData
+}
+);
+
+const data = await response.json();
+return data.secure_url;
+}
+
 /* SAVE AUDIO */
-window.saveAudio = function(){
+window.saveAudio = async function(){
+
+const file = document.getElementById("audioFile").files[0];
+if(!file){
+alert("Chagua audio kwanza");
+return;
+}
+
+const audioURL = await uploadToCloudinary(file);
+
 push(ref(db,"audios"),{
 title:document.getElementById("title").value,
 description:document.getElementById("description").value,
 category:document.getElementById("category").value,
-url:document.getElementById("link").value,
+url:audioURL,
 date:Date.now()
 });
-alert("Audio Saved");
+
+alert("✅ Audio imefanikiwa kupakiwa!");
 };
 
 /* SAVE RATIBA */
