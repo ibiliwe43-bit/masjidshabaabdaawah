@@ -2,16 +2,41 @@
 <html>
 <head>
 <title>Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body{font-family:Arial;padding:20px;background:#f4f4f4;}
-input,select,textarea{width:100%;padding:8px;margin-bottom:10px;}
-button{padding:8px 15px;background:#00695c;color:white;border:none;border-radius:5px;cursor:pointer;}
-.box{background:white;padding:15px;border-radius:8px;margin-top:15px;}
+body{
+font-family:Arial;
+padding:20px;
+background:#f4f4f4;
+}
+
+input,select,textarea{
+width:100%;
+padding:8px;
+margin-bottom:10px;
+}
+
+button{
+padding:8px 15px;
+background:#00695c;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+.box{
+background:white;
+padding:15px;
+border-radius:8px;
+margin-top:15px;
+}
 </style>
 </head>
 <body>
 
-<h2>Admin - Weka Audio</h2>
+<h2>Admin - Upload Audio</h2>
 
 <input type="text" id="title" placeholder="Jina la Audio">
 <textarea id="description" placeholder="Maelezo"></textarea>
@@ -26,9 +51,10 @@ button{padding:8px 15px;background:#00695c;color:white;border:none;border-radius
 <input type="file" id="audioFile" accept="audio/*">
 
 <button id="uploadBtn">Upload Audio</button>
+
 <hr>
 
-<h2>Ratiba ya Swala (Edit)</h2>
+<h2>Ratiba ya Swala</h2>
 
 <input type="text" id="fajr" placeholder="Fajr">
 <input type="text" id="dhuhr" placeholder="Dhuhr">
@@ -44,6 +70,7 @@ button{padding:8px 15px;background:#00695c;color:white;border:none;border-radius
 <div id="audioList"></div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
 
@@ -56,8 +83,38 @@ storageBucket: "masjidshabaab.firebasestorage.app",
 messagingSenderId: "1069424481338",
 appId: "1:1069424481338:web:4eebe45e31ec3c24aad103"
 };
-  /* 🔥 BUTTON EVENT */
-document.getElementById("uploadBtn").addEventListener("click", async () => {
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+/* ================= CLOUDINARY UPLOAD ================= */
+
+async function uploadToCloudinary(file){
+
+const cloudName = "drlltmnlb";  // 🔥 badilisha kama ni tofauti
+const uploadPreset = "audio_upload";
+
+const formData = new FormData();
+formData.append("file", file);
+formData.append("upload_preset", uploadPreset);
+
+const response = await fetch(
+`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
+{
+method:"POST",
+body:formData
+}
+);
+
+const data = await response.json();
+return data.secure_url;
+}
+
+/* ================= UPLOAD BUTTON ================= */
+
+window.addEventListener("DOMContentLoaded", ()=>{
+
+document.getElementById("uploadBtn").addEventListener("click", async ()=>{
 
 const file = document.getElementById("audioFile").files[0];
 
@@ -70,27 +127,7 @@ const title = document.getElementById("title").value;
 const description = document.getElementById("description").value;
 const category = document.getElementById("category").value;
 
-/* Upload to Cloudinary */
-const cloudName = "drlltmnlb";
-const uploadPreset = "audio_upload";
-
-const formData = new FormData();
-formData.append("file", file);
-formData.append("upload_preset", uploadPreset);
-
-const res = await fetch(
-`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
-{
-method:"POST",
-body:formData
-}
-);
-
-const data = await res.json();
-const audioURL = data.secure_url;
-
-/* Save to Firebase */
-import { push, ref } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+const audioURL = await uploadToCloudinary(file);
 
 push(ref(db,"audios"),{
 title:title,
@@ -104,55 +141,12 @@ alert("✅ Audio Imeupload Kikamilifu!");
 
 });
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-/* 🔥 CLOUDINARY UPLOAD */
-async function uploadToCloudinary(file){
-
-const cloudName = "drlltmnlb";  // badilisha kama ni tofauti
-const uploadPreset = "audio_upload"; // hakikisha ume-create unsigned preset
-
-const formData = new FormData();
-formData.append("file", file);
-formData.append("upload_preset", uploadPreset);
-
-const response = await fetch(
-`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
-{
-method: "POST",
-body: formData
-}
-);
-
-const data = await response.json();
-return data.secure_url;
-}
-
-/* SAVE AUDIO */
-window.saveAudio = async function(){
-
-const file = document.getElementById("audioFile").files[0];
-if(!file){
-alert("Chagua audio kwanza");
-return;
-}
-
-const audioURL = await uploadToCloudinary(file);
-
-push(ref(db,"audios"),{
-title:document.getElementById("title").value,
-description:document.getElementById("description").value,
-category:document.getElementById("category").value,
-url:audioURL,
-date:Date.now()
 });
 
-alert("✅ Audio imefanikiwa kupakiwa!");
-};
+/* ================= RATIBA ================= */
 
-/* SAVE RATIBA */
 window.saveRatiba = function(){
+
 set(ref(db,"ratiba"),{
 fajr:document.getElementById("fajr").value,
 dhuhr:document.getElementById("dhuhr").value,
@@ -160,24 +154,37 @@ asr:document.getElementById("asr").value,
 maghrib:document.getElementById("maghrib").value,
 isha:document.getElementById("isha").value
 });
-alert("Ratiba Saved");
+
+alert("✅ Ratiba Imehifadhiwa");
+
 };
 
-/* LOAD AUDIO LIST */
+/* ================= LOAD AUDIO ================= */
+
 onValue(ref(db,"audios"),snapshot=>{
+
 const container=document.getElementById("audioList");
 container.innerHTML="";
+
 snapshot.forEach(child=>{
 const data=child.val();
+
 container.innerHTML+=`
 <div class="box">
 <b>${data.title}</b><br>
-<small>${data.category}</small><br>
-<button onclick="deleteAudio('${child.key}')">Delete</button>
+<small>${data.category}</small><br><br>
+
+<button onclick="deleteAudio('${child.key}')">
+Delete
+</button>
+
 </div>
 `;
 });
+
 });
+
+/* ================= DELETE ================= */
 
 window.deleteAudio=function(id){
 remove(ref(db,"audios/"+id));
