@@ -3,35 +3,11 @@
 <head>
 <title>Admin Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
-body{
-font-family:Arial;
-padding:20px;
-background:#f4f4f4;
-}
-
-input,select,textarea{
-width:100%;
-padding:8px;
-margin-bottom:10px;
-}
-
-button{
-padding:8px 15px;
-background:#00695c;
-color:white;
-border:none;
-border-radius:5px;
-cursor:pointer;
-}
-
-.box{
-background:white;
-padding:15px;
-border-radius:8px;
-margin-top:15px;
-}
+body{font-family:Arial;padding:20px;background:#f4f4f4;}
+input,select,textarea{width:100%;padding:8px;margin-bottom:10px;}
+button{padding:8px 15px;background:#00695c;color:white;border:none;border-radius:5px;cursor:pointer;}
+.box{background:white;padding:15px;border-radius:8px;margin-top:15px;}
 </style>
 </head>
 <body>
@@ -62,7 +38,7 @@ margin-top:15px;
 <input type="text" id="maghrib" placeholder="Maghrib">
 <input type="text" id="isha" placeholder="Isha">
 
-<button onclick="saveRatiba()">Save Ratiba</button>
+<button id="saveRatibaBtn">Save Ratiba</button>
 
 <hr>
 
@@ -71,6 +47,7 @@ margin-top:15px;
 
 <script type="module">
 
+// ===== FIREBASE =====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
 
@@ -87,107 +64,89 @@ appId: "1:1069424481338:web:4eebe45e31ec3c24aad103"
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ================= CLOUDINARY UPLOAD ================= */
-
+// ===== CLOUDINARY UPLOAD =====
 async function uploadToCloudinary(file){
+  const cloudName = "drlltmnlb"; // badilisha kama ni tofauti
+  const uploadPreset = "audio_upload";
 
-const cloudName = "drlltmnlb";  // 🔥 badilisha kama ni tofauti
-const uploadPreset = "audio_upload";
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", uploadPreset);
 
-const formData = new FormData();
-formData.append("file", file);
-formData.append("upload_preset", uploadPreset);
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
+    { method: "POST", body: formData }
+  );
 
-const response = await fetch(
-`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
-{
-method:"POST",
-body:formData
-}
-);
-
-const data = await response.json();
-return data.secure_url;
+  const data = await response.json();
+  return data.secure_url;
 }
 
-/* ================= UPLOAD BUTTON ================= */
-
+// ===== WAIT FOR DOM =====
 window.addEventListener("DOMContentLoaded", ()=>{
 
-document.getElementById("uploadBtn").addEventListener("click", async ()=>{
+  const uploadBtn = document.getElementById("uploadBtn");
+  const saveRatibaBtn = document.getElementById("saveRatibaBtn");
 
-const file = document.getElementById("audioFile").files[0];
+  // ===== UPLOAD AUDIO =====
+  uploadBtn.addEventListener("click", async ()=>{
+    const file = document.getElementById("audioFile").files[0];
+    if(!file){ alert("Chagua audio kwanza!"); return; }
 
-if(!file){
-alert("Chagua audio kwanza!");
-return;
-}
+    const title = document.getElementById("title").value;
+    const description = document.getElementById("description").value;
+    const category = document.getElementById("category").value;
 
-const title = document.getElementById("title").value;
-const description = document.getElementById("description").value;
-const category = document.getElementById("category").value;
+    const audioURL = await uploadToCloudinary(file);
 
-const audioURL = await uploadToCloudinary(file);
+    push(ref(db,"audios"),{
+      title:title,
+      description:description,
+      category:category,
+      url:audioURL,
+      date:Date.now()
+    });
 
-push(ref(db,"audios"),{
-title:title,
-description:description,
-category:category,
-url:audioURL,
-date:Date.now()
-});
+    alert("✅ Audio Imeupload Kikamilifu!");
+    document.getElementById("audioFile").value = "";
+    document.getElementById("title").value = "";
+    document.getElementById("description").value = "";
+  });
 
-alert("✅ Audio Imeupload Kikamilifu!");
+  // ===== SAVE RATIBA =====
+  saveRatibaBtn.addEventListener("click", ()=>{
+    set(ref(db,"ratiba"),{
+      fajr:document.getElementById("fajr").value,
+      dhuhr:document.getElementById("dhuhr").value,
+      asr:document.getElementById("asr").value,
+      maghrib:document.getElementById("maghrib").value,
+      isha:document.getElementById("isha").value
+    });
+    alert("✅ Ratiba Imehifadhiwa");
+  });
 
-});
+  // ===== LOAD AUDIO LIST =====
+  const audioList = document.getElementById("audioList");
 
-});
-
-/* ================= RATIBA ================= */
-
-window.saveRatiba = function(){
-
-set(ref(db,"ratiba"),{
-fajr:document.getElementById("fajr").value,
-dhuhr:document.getElementById("dhuhr").value,
-asr:document.getElementById("asr").value,
-maghrib:document.getElementById("maghrib").value,
-isha:document.getElementById("isha").value
-});
-
-alert("✅ Ratiba Imehifadhiwa");
-
-};
-
-/* ================= LOAD AUDIO ================= */
-
-onValue(ref(db,"audios"),snapshot=>{
-
-const container=document.getElementById("audioList");
-container.innerHTML="";
-
-snapshot.forEach(child=>{
-const data=child.val();
-
-container.innerHTML+=`
-<div class="box">
-<b>${data.title}</b><br>
-<small>${data.category}</small><br><br>
-
-<button onclick="deleteAudio('${child.key}')">
-Delete
-</button>
-
-</div>
-`;
-});
+  onValue(ref(db,"audios"), snapshot=>{
+    audioList.innerHTML = "";
+    snapshot.forEach(child=>{
+      const data = child.val();
+      audioList.innerHTML += `
+        <div class="box">
+          <b>${data.title}</b><br>
+          <small>${data.category}</small><br><br>
+          <button onclick="deleteAudio('${child.key}')">Delete</button>
+        </div>
+      `;
+    });
+  });
 
 });
 
-/* ================= DELETE ================= */
-
-window.deleteAudio=function(id){
-remove(ref(db,"audios/"+id));
+// ===== DELETE =====
+window.deleteAudio = function(id){
+  remove(ref(db,"audios/"+id));
 };
 
 </script>
