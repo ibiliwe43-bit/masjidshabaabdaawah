@@ -14,21 +14,6 @@ margin:0;
 font-family:Arial;
 background:#f4f4f4;
 }
-  <!-- 🔐 ADMIN LOGIN -->
-<div id="loginSection" style="text-align:center;padding:40px;">
-<h3>Admin Login</h3>
-
-<input type="password" id="adminPassword" placeholder="Enter Password"
-style="padding:10px;width:250px;border-radius:6px;border:1px solid #ccc;">
-
-<br><br>
-
-<button onclick="loginAdmin()"
-style="padding:10px 20px;background:#00695c;color:white;border:none;border-radius:6px;">
-Login
-</button>
-
-</div>
 
 .hero{
 background-image: url("https://masjidshabaabdaawah.github.io/mosque.jpg");
@@ -266,24 +251,6 @@ if(deferredPrompt){
 deferredPrompt.prompt();
 }
 });
-  /* 🔐 ADMIN LOGIN SYSTEM */
-
-const correctPassword = "1234"; // 🔑 BADILISHA PASSWORD HAPA
-
-window.loginAdmin = function(){
-
-const input = document.getElementById("adminPassword").value;
-
-if(input === correctPassword){
-
-document.getElementById("loginSection").style.display = "none";
-alert("Login Success ✅");
-
-}else{
-alert("Password Wrong ❌");
-}
-
-};
 </script>
 
   <!-- ===== AUTO LOAD AUDIO FROM GITHUB FOLDER ===== -->
