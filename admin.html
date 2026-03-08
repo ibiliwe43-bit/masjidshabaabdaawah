@@ -25,15 +25,19 @@ button{background:#0b7a3e;color:white;border:none;padding:8px 12px;border-radius
 
 <div class="container">
 
+<!-- DASHBOARD -->
 <div class="card">
 <h3>Dashboard</h3>
 Audio Zote: <span class="stats" id="totalAudio">0</span>
 </div>
 
+<!-- UPLOAD AUDIO -->
 <div class="card">
 <h3>Upload Audio</h3>
-Jina la Audio <input id="title" placeholder="Jina la Audio">
-Maelezo <textarea id="desc" placeholder="Maelezo ya Audio"></textarea>
+Jina la Audio
+<input id="title" placeholder="Jina la Audio">
+Maelezo
+<textarea id="desc" placeholder="Maelezo ya Audio"></textarea>
 Category 
 <select id="category">
 <option value="darsa">Darsa za Jumamosi</option>
@@ -41,21 +45,25 @@ Category
 <option value="eid">Khutbah za Eid</option>
 <option value="ramadhan">Darsa za Ramadhani</option>
 </select>
-Audio <input type="file" id="file">
+Audio
+<input type="file" id="file">
 <audio id="preview" controls style="width:100%;display:none"></audio>
 <button onclick="upload()">Upload Audio</button>
 </div>
 
+<!-- SEARCH AUDIO -->
 <div class="card">
 <h3>Search Audio</h3>
 <input id="search" placeholder="Tafuta audio...">
 </div>
 
+<!-- AUDIO LIST -->
 <div class="card">
 <h3>Audio Zote</h3>
 <div id="audioList"></div>
 </div>
 
+<!-- RATIBA YA SWALA -->
 <div class="card">
 <h3>Ratiba ya Swala</h3>
 Fajr Adhana <input id="fajrA">
@@ -87,6 +95,7 @@ const db=firebase.database();
 let audios=[];
 let editId=null;
 
+// PREVIEW AUDIO
 document.getElementById("file").addEventListener("change",function(){
 const file=this.files[0];
 if(file){
@@ -97,6 +106,7 @@ preview.style.display="block";
 }
 });
 
+// UPLOAD OR EDIT AUDIO
 function upload(){
 const title=document.getElementById("title").value;
 const desc=document.getElementById("desc").value;
@@ -120,6 +130,7 @@ alert("Audio uploaded ✅");
 reader.readAsDataURL(file);
 }
 
+// LOAD AUDIO LIST
 db.ref("audios").on("value",snap=>{
 const data=snap.val();
 audios=[];
@@ -128,6 +139,7 @@ document.getElementById("totalAudio").innerText=audios.length;
 showAudios(audios);
 });
 
+// SHOW AUDIO LIST
 function showAudios(list){
 let html="";
 list.forEach(a=>{
@@ -141,8 +153,10 @@ ${a.category}<br><br>
 document.getElementById("audioList").innerHTML=html;
 }
 
+// DELETE AUDIO
 function deleteAudio(id){ if(confirm("Futa audio hii?")) db.ref("audios/"+id).remove(); }
 
+// EDIT AUDIO
 function editAudio(id,title,desc,category){
 editId=id;
 document.getElementById("title").value=title;
@@ -151,12 +165,14 @@ document.getElementById("category").value=category;
 window.scrollTo(0,0);
 }
 
+// SEARCH AUDIO
 document.getElementById("search").addEventListener("input",function(){
 let q=this.value.toLowerCase();
 let filtered=audios.filter(a=> a.title.toLowerCase().includes(q) || a.desc.toLowerCase().includes(q) || a.category.toLowerCase().includes(q) );
 showAudios(filtered);
 });
 
+// SAVE RATIBA
 function saveRatiba(){
 db.ref("ratiba").set({
 fajrA:document.getElementById("fajrA").value,
@@ -173,6 +189,5 @@ ishaI:document.getElementById("ishaI").value
 alert("Ratiba saved ✅");
 }
 </script>
-
 </body>
 </html>
