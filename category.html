@@ -1,38 +1,64 @@
 <!DOCTYPE html>
-<html>
+<html lang="sw">
 <head>
-  <title>Audio</title>
-  <style>
-    body { font-family:Arial; padding:20px; background:#f4f4f4; }
-    .audio-box {
-      background:white;
-      padding:15px;
-      margin-bottom:15px;
-      border-radius:8px;
-    }
-    input { padding:8px; width:100%; margin-bottom:15px; }
-  </style>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Audio Category</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f4f4f4;
+margin:0;
+}
+
+.header{
+background:#0a7d3b;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.section{
+padding:15px;
+}
+
+.audio-card{
+background:white;
+padding:15px;
+margin-bottom:15px;
+border-radius:8px;
+}
+
+audio{
+width:100%;
+}
+
+</style>
+
 </head>
+
 <body>
 
-<h2 id="categoryTitle"></h2>
+<div class="header">
+<h2 id="title">Audio</h2>
+</div>
 
-<input type="text" id="search" placeholder="Search audio...">
-
-<div id="audioList"></div>
+<div class="section" id="audioList"></div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBrgOTZN04zoRlpDzOgHFlK_5HvJW6pxD0",
-  authDomain: "masjidshabaab.firebaseapp.com",
-  databaseURL: "https://masjidshabaab-default-rtdb.firebaseio.com/",
-  projectId: "masjidshabaab",
-  storageBucket: "masjidshabaab.firebasestorage.app",
-  messagingSenderId: "1069424481338",
-  appId: "1:1069424481338:web:4eebe45e31ec3c24aad103"
+apiKey:"AIzaSyBrgOtZN04zoRlpDzOgHFlK_5HvJW6pxD0",
+authDomain:"masjidshabaab.firebaseapp.com",
+databaseURL:"https://masjidshabaab-default-rtdb.firebaseio.com/",
+projectId:"masjidshabaab"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -41,39 +67,43 @@ const db = getDatabase(app);
 const params = new URLSearchParams(window.location.search);
 const type = params.get("type");
 
-document.getElementById("categoryTitle").innerText = type.toUpperCase();
+document.getElementById("title").innerText = type;
 
-const searchInput = document.getElementById("search");
+onValue(ref(db,"audios"), snapshot=>{
 
-onValue(ref(db, "audios"), (snapshot) => {
-  const data = snapshot.val();
-  const container = document.getElementById("audioList");
-  container.innerHTML = "";
+const container=document.getElementById("audioList");
+container.innerHTML="";
 
-  if(!data) return;
+snapshot.forEach(child=>{
 
-  for (let id in data) {
-    if(data[id].category === type) {
-      container.innerHTML += `
-        <div class="audio-box">
-          <h4>${data[id].title}</h4>
-          <p>${data[id].description || ""}</p>
-          <audio controls src="${data[id].url}"></audio>
-        </div>
-      `;
-    }
-  }
+const data=child.val();
+
+if(data.category === type){
+
+container.innerHTML+=`
+
+<div class="audio-card">
+
+<h3>${data.title}</h3>
+
+<p>${data.description || ""}</p>
+
+<audio controls src="${data.url}"></audio>
+
+<br><br>
+
+<a href="${data.url}" download>Download</a>
+
+</div>
+
+`;
+
+}
+
 });
 
-searchInput.addEventListener("input", function() {
-  const value = this.value.toLowerCase();
-  const boxes = document.querySelectorAll(".audio-box");
-
-  boxes.forEach(box => {
-    const text = box.innerText.toLowerCase();
-    box.style.display = text.includes(value) ? "block" : "none";
-  });
 });
+
 </script>
 
 </body>
