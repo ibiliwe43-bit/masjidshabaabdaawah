@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html lang="sw">
+<html>
 <head>
 
 <meta charset="UTF-8">
 <title>Masjid Shabaab Daawah</title>
-
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
 <link rel="stylesheet" href="style.css">
@@ -13,59 +12,28 @@
 
 <body>
 
-<header>
+<div class="header">
+<h2>Masjid Shabaab Daawah</h2>
+</div>
 
-<h1>Masjid Shabaab Daawah</h1>
+<div class="container">
 
-<p>Karibu usikilize darsa na khutbah</p>
+<h3>Audio Zote</h3>
 
-</header>
+<div id="audioList">Loading...</div>
 
-
-<section class="categories">
-
-<button onclick="filterCategory('all')">Zote</button>
-
-<button onclick="filterCategory('darsa')">Darsa</button>
-
-<button onclick="filterCategory('jumaa')">Khutbah za Ijumaa</button>
-
-<button onclick="filterCategory('eid')">Khutbah za Eid</button>
-
-<button onclick="filterCategory('ramadhan')">Ramadhan</button>
-
-</section>
-
-
-<section id="audioList" class="audioList">
-
-Loading...
-
-</section>
-
-
-<footer>
-
-<p>© Masjid Shabaab Daawah</p>
-
-</footer>
-
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
 
 <script>
 
 var firebaseConfig = {
 
 apiKey:"AIzaSyBrgOtZN04zoRlpDzOgHFlK_5HvJW6pxD0",
-
 authDomain:"masjidshabaab.firebaseapp.com",
-
 databaseURL:"https://masjidshabaab-default-rtdb.firebaseio.com/",
-
 projectId:"masjidshabaab"
 
 };
@@ -74,75 +42,49 @@ firebase.initializeApp(firebaseConfig);
 
 const db=firebase.database();
 
-let audios=[];
-
-
 db.ref("audios").on("value",snap=>{
 
 const data=snap.val();
 
-audios=[];
+let html="";
+
+if(!data){
+
+html="Hakuna audio bado";
+
+}else{
 
 for(let id in data){
 
-audios.push({id,...data[id]});
-
-}
-
-showAudios(audios);
-
-});
-
-
-function showAudios(list){
-
-let html="";
-
-list.forEach(a=>{
+let a=data[id];
 
 html+=`
 
 <div class="audio">
 
-<h3>${a.title}</h3>
+<b>${a.title}</b>
+<br>
+${a.category}
 
-<p>${a.desc}</p>
+<br><br>
 
-<audio controls>
-
+<audio controls style="width:100%">
 <source src="${a.url}">
-
 </audio>
 
 </div>
 
 `;
 
-});
+}
+
+}
 
 document.getElementById("audioList").innerHTML=html;
 
-}
-
-
-function filterCategory(cat){
-
-if(cat==="all"){
-
-showAudios(audios);
-
-return;
-
-}
-
-let filtered=audios.filter(a=>a.category===cat);
-
-showAudios(filtered);
-
-}
+});
 
 </script>
 
 </body>
-
 </html>
