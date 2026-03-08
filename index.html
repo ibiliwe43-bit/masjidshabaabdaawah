@@ -1,292 +1,237 @@
 <!DOCTYPE html>
-<html lang="sw">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Masjid Shabaab Daawah</title>
 
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#00695c">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <style>
+
 body{
-margin:0;
 font-family:Arial;
-background:#f4f4f4;
+margin:0;
+background:#f1f1f1;
 }
 
-.hero{
-background-image: url("https://masjidshabaabdaawah.github.io/mosque.jpg");
-background-size: cover;
-background-position: center;
-background-repeat: no-repeat;
-height:230px;
+.header{
+background:#0b7a3e;
 color:white;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-text-shadow:2px 2px 6px black;
-}
-
-.section{
+text-align:center;
 padding:15px;
 }
 
-button{
-cursor:pointer;
-}
-
-#installBtn{
-padding:12px 20px;
-background:#004d40;
-color:white;
-border:none;
-border-radius:8px;
-font-size:16px;
-display:none;
-}
-
-input{
+.mosque{
 width:100%;
+height:200px;
+object-fit:cover;
+}
+
+.search{
+width:90%;
+margin:15px auto;
+display:block;
 padding:10px;
+font-size:16px;
 border-radius:6px;
 border:1px solid #ccc;
 }
 
-.categories button{
-width:100%;
-padding:12px;
-margin:6px 0;
-border:none;
-background:#00695c;
-color:white;
+.section{
+background:white;
+margin:15px;
+padding:15px;
+border-radius:8px;
+}
+
+.audio{
+background:#fafafa;
+padding:10px;
+margin-top:10px;
 border-radius:6px;
 }
 
-.audio-card{
-background:white;
-padding:15px;
-margin-bottom:15px;
-border-radius:8px;
-box-shadow:0 2px 5px rgba(0,0,0,0.1);
+.category{
+color:#0b7a3e;
+font-weight:bold;
 }
 
-footer{
-background:#004d40;
+button{
+background:#0b7a3e;
 color:white;
+border:none;
+padding:8px 12px;
+border-radius:5px;
+}
+
+.footer{
 text-align:center;
 padding:20px;
-margin-top:30px;
+color:#555;
 font-size:14px;
 }
+
 </style>
+
 </head>
+
 <body>
 
-<!-- HERO -->
-<div class="hero">
+<img src="mosque.jpg" class="mosque">
+
+<div class="header">
+
 <h2>MASJID SHABAAB DAAWAH</h2>
-<p>Buhongwa – Mwanza</p>
+Buhongwa – Mwanza
+
 </div>
 
-<!-- INSTALL BUTTON -->
-<div class="section" style="text-align:center;">
-<button id="installBtn">Install App</button>
-</div>
+<input type="text" id="search" class="search" placeholder="Tafuta audio...">
 
-<!-- SEARCH -->
 <div class="section">
-<input type="text" id="searchInput"
-placeholder="Tafuta audio..."
-onkeyup="searchAudio()">
-</div>
 
-<!-- RATIBA -->
-<div class="section">
 <h3>Ratiba ya Swala</h3>
-<div id="ratibaBox">Inapakia ratiba...</div>
+
+<div id="ratiba"></div>
+
 </div>
 
-<!-- CATEGORIES -->
 <div class="section">
+
 <h3>Vipengele</h3>
 
-<div class="categories">
-<button onclick="openCategory('darsa')">
-Darsa za Jumamosi & Jumapili
-</button>
-
-<button onclick="openCategory('jumaa')">
-Khutbah za Ijumaa
-</button>
-
-<button onclick="openCategory('eid')">
-Khutbah za Eid
-</button>
-
-<button onclick="openCategory('ramadhan')">
+Darsa za Jumamosi & Jumapili<br>
+Khutbah za Ijumaa<br>
+Khutbah za Eid<br>
 Darsa za Ramadhani
-</button>
-</div>
+
 </div>
 
-<!-- AUDIO LIST -->
 <div class="section">
+
+<h3>Audio</h3>
+
 <div id="audioList"></div>
+
 </div>
 
-<!-- FOOTER -->
-<footer>
-<p>© 2026 Masjid Shabaab Daawah</p>
-<p>Buhongwa – Mwanza</p>
-<p>Designed for Daawah Purpose</p>
-</footer>
+<div class="footer">
 
-<!-- ================= FIREBASE ================= -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+© 2026 Masjid Shabaab Daawah<br>
+Buhongwa – Mwanza<br>
+Designed for Daawah Purpose
 
-const firebaseConfig = {
-apiKey: "AIzaSyCRKV93NJ7YX1zP7xAiG340mTXDTIEweaQ",
-authDomain: "masjidshabaab.firebaseapp.com",
-databaseURL: "https://masjidshabaab-default-rtdb.firebaseio.com/",
-projectId: "masjidshabaab",
-storageBucket: "masjidshabaab.firebasestorage.app",
-messagingSenderId: "590758366670",
-appId: "1:590758366670:web:2fe678c410285fab5fef9f"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-/* ===== RATIBA ===== */
-const ratibaBox = document.getElementById("ratibaBox");
-
-onValue(ref(db,"ratiba"), snapshot=>{
-if(snapshot.exists()){
-const data = snapshot.val();
-ratibaBox.innerHTML = `
-Fajr – ${data.fajr || "-"}<br>
-Dhuhr – ${data.dhuhr || "-"}<br>
-Asr – ${data.asr || "-"}<br>
-Maghrib – ${data.maghrib || "-"}<br>
-Isha – ${data.isha || "-"}
-`;
-}else{
-ratibaBox.innerHTML = "Hakuna ratiba";
-}
-});
-
-/* ===== AUDIOS ===== */
-let allAudios = [];
-let currentCategory = "";
-
-onValue(ref(db,"audios"), snapshot=>{
-allAudios = [];
-snapshot.forEach(child=>{
-allAudios.push({ id:child.key, ...child.val() });
-});
-displayAudios();
-});
-
-function displayAudios(){
-
-const container = document.getElementById("audioList");
-container.innerHTML = "";
-
-let filtered = allAudios.filter(a =>
-currentCategory === "" ||
-(a.category && a.category.toLowerCase() === currentCategory.toLowerCase())
-);
-
-filtered.reverse().forEach(audio=>{
-container.innerHTML += `
-<div class="audio-card">
-<h3>${audio.title}</h3>
-<p>${audio.description || ""}</p>
-<audio controls src="${audio.url}"></audio><br>
-<a href="${audio.url}" download>Download</a>
 </div>
-`;
-});
-}
 
-window.openCategory = function(cat){
-currentCategory = cat;
-displayAudios();
-};
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-window.searchAudio = function(){
-const value = document.getElementById("searchInput").value.toLowerCase();
-const container = document.getElementById("audioList");
-container.innerHTML = "";
-
-allAudios
-.filter(a => a.title.toLowerCase().includes(value))
-.forEach(audio=>{
-container.innerHTML += `
-<div class="audio-card">
-<h3>${audio.title}</h3>
-<p>${audio.description || ""}</p>
-<audio controls src="${audio.url}"></audio>
-</div>
-`;
-});
-};
-
-/* ===== INSTALL BUTTON ===== */
-let deferredPrompt;
-const installBtn = document.getElementById("installBtn");
-
-window.addEventListener("beforeinstallprompt", (e)=>{
-e.preventDefault();
-deferredPrompt = e;
-installBtn.style.display = "inline-block";
-});
-
-installBtn.addEventListener("click", ()=>{
-if(deferredPrompt){
-deferredPrompt.prompt();
-}
-});
-</script>
-
-  <!-- ===== AUTO LOAD AUDIO FROM GITHUB FOLDER ===== -->
 <script>
-fetch("https://api.github.com/repos/masjidshabaabdaawah/masjidshabaabdaawah.github.io/contents/audio")
-.then(res => res.json())
-.then(files => {
 
-const container = document.getElementById("audioList");
+var firebaseConfig = {
 
-files.forEach(file => {
+apiKey:"AIzaSyBrgOtZN04zoRlpDzOgHFlK_5HvJW6pxD0",
+authDomain:"masjidshabaab.firebaseapp.com",
+databaseURL:"https://masjidshabaab-default-rtdb.firebaseio.com/",
+projectId:"masjidshabaab"
 
-if(file.name && file.name.endsWith(".mp3")){
+};
 
-container.innerHTML += `
-<div class="audio-card">
-<h3>${file.name}</h3>
+firebase.initializeApp(firebaseConfig);
 
-<audio controls style="width:100%;">
-<source src="${file.download_url}" type="audio/mpeg">
+const db = firebase.database();
+
+let audios=[];
+
+db.ref("ratiba").on("value",snap=>{
+
+const r=snap.val();
+
+if(!r)return;
+
+document.getElementById("ratiba").innerHTML=`
+
+Fajr – ADHANA ${r.fajrA} IQAMA ${r.fajrI}<br>
+Dhuhr – ADHANA ${r.dhuhrA} IQAMA ${r.dhuhrI}<br>
+Asr – ADHANA ${r.asrA} IQAMA ${r.asrI}<br>
+Maghrib – ADHANA ${r.maghribA} IQAMA ${r.maghribI}<br>
+Isha – ADHANA ${r.ishaA} IQAMA ${r.ishaI}
+
+`;
+
+});
+
+db.ref("audios").on("value",snap=>{
+
+const data=snap.val();
+
+audios=[];
+
+for(let id in data){
+
+audios.push(data[id]);
+
+}
+
+audios.reverse();
+
+showAudios(audios);
+
+});
+
+function showAudios(list){
+
+let html="";
+
+list.forEach(a=>{
+
+html+=`
+
+<div class="audio">
+
+<div class="category">${a.category}</div>
+
+<h4>${a.title}</h4>
+
+<p>${a.desc}</p>
+
+<audio controls style="width:100%">
+<source src="${a.url}">
 </audio>
 
 <br><br>
 
-<a href="${file.download_url}" download>
-Download
+<a href="${a.url}" download>
+<button>Download</button>
 </a>
 
 </div>
+
 `;
+
+});
+
+document.getElementById("audioList").innerHTML=html;
 
 }
 
-});
+document.getElementById("search").addEventListener("input",function(){
+
+let q=this.value.toLowerCase();
+
+let filtered=audios.filter(a=>
+
+a.title.toLowerCase().includes(q) ||
+a.desc.toLowerCase().includes(q) ||
+a.category.toLowerCase().includes(q)
+
+);
+
+showAudios(filtered);
 
 });
+
 </script>
+
 </body>
 </html>
