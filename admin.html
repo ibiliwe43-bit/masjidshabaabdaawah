@@ -3,23 +3,33 @@
 <head>
 
 <meta charset="UTF-8">
-<title>Admin Panel</title>
-
+<title>Masjid Admin Panel</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
 <style>
 
 body{
 font-family:Arial;
-background:#f2f2f2;
-padding:20px;
+margin:0;
+background:#f1f1f1;
 }
 
-.box{
+.header{
+background:#0b7a3e;
+color:white;
+padding:15px;
+text-align:center;
+}
+
+.container{
+padding:15px;
+}
+
+.card{
 background:white;
 padding:15px;
 margin-bottom:20px;
-border-radius:6px;
+border-radius:8px;
 }
 
 input,textarea,select{
@@ -32,8 +42,29 @@ button{
 background:#0b7a3e;
 color:white;
 border:none;
+padding:8px 12px;
+border-radius:5px;
+}
+
+.delete{
+background:red;
+}
+
+.edit{
+background:orange;
+}
+
+.stats{
+font-size:20px;
+font-weight:bold;
+color:#0b7a3e;
+}
+
+.audio{
+background:#fafafa;
 padding:10px;
 margin-top:10px;
+border-radius:6px;
 }
 
 </style>
@@ -42,9 +73,26 @@ margin-top:10px;
 
 <body>
 
-<h2>Admin - Upload Audio</h2>
+<div class="header">
 
-<div class="box">
+<h2>Masjid Shabaab Admin</h2>
+
+</div>
+
+<div class="container">
+
+<div class="card">
+
+<h3>Dashboard</h3>
+
+Audio Zote:
+<div class="stats" id="totalAudio">0</div>
+
+</div>
+
+<div class="card">
+
+<h3>Upload Audio</h3>
 
 Jina la Audio
 <input id="title">
@@ -62,48 +110,30 @@ Category
 
 </select>
 
-Audio File
+Audio
 <input type="file" id="file">
 
-<button onclick="upload()">Upload Audio</button>
+<audio id="preview" controls style="width:100%;display:none"></audio>
+
+<button onclick="upload()">Upload</button>
 
 </div>
 
-<div class="box">
+<div class="card">
 
-<h3>Ratiba ya Swala</h3>
+<h3>Search Audio</h3>
 
-Fajr Adhana
-<input id="fajrA">
+<input id="search" placeholder="Tafuta audio...">
 
-Fajr Iqama
-<input id="fajrI">
+</div>
 
-Dhuhr Adhana
-<input id="dhuhrA">
+<div class="card">
 
-Dhuhr Iqama
-<input id="dhuhrI">
+<h3>Audio Zote</h3>
 
-Asr Adhana
-<input id="asrA">
+<div id="audioList"></div>
 
-Asr Iqama
-<input id="asrI">
-
-Maghrib Adhana
-<input id="maghribA">
-
-Maghrib Iqama
-<input id="maghribI">
-
-Isha Adhana
-<input id="ishaA">
-
-Isha Iqama
-<input id="ishaI">
-
-<button onclick="saveRatiba()">Save Ratiba</button>
+</div>
 
 </div>
 
@@ -125,6 +155,22 @@ firebase.initializeApp(firebaseConfig);
 
 const db=firebase.database();
 
+let audios=[];
+let editId=null;
+
+document.getElementById("file").addEventListener("change",function(){
+
+const file=this.files[0];
+
+const url=URL.createObjectURL(file);
+
+const preview=document.getElementById("preview");
+
+preview.src=url;
+preview.style.display="block";
+
+});
+
 function upload(){
 
 const title=document.getElementById("title").value;
@@ -137,16 +183,28 @@ const reader=new FileReader();
 
 reader.onload=function(){
 
-db.ref("audios").push({
-
+const data={
 title:title,
 desc:desc,
 category:category,
 url:reader.result
+};
 
-});
+if(editId){
 
-alert("Audio Uploaded");
+db.ref("audios/"+editId).update(data);
+
+alert("Audio edited");
+
+editId=null;
+
+}else{
+
+db.ref("audios").push(data);
+
+alert("Audio uploaded");
+
+}
 
 }
 
@@ -154,30 +212,94 @@ reader.readAsDataURL(file);
 
 }
 
-function saveRatiba(){
+db.ref("audios").on("value",snap=>{
 
-db.ref("ratiba").set({
+const data=snap.val();
 
-fajrA:document.getElementById("fajrA").value,
-fajrI:document.getElementById("fajrI").value,
+audios=[];
 
-dhuhrA:document.getElementById("dhuhrA").value,
-dhuhrI:document.getElementById("dhuhrI").value,
+for(let id in data){
 
-asrA:document.getElementById("asrA").value,
-asrI:document.getElementById("asrI").value,
+audios.push({id,...data[id]});
 
-maghribA:document.getElementById("maghribA").value,
-maghribI:document.getElementById("maghribI").value,
+}
 
-ishaA:document.getElementById("ishaA").value,
-ishaI:document.getElementById("ishaI").value
+document.getElementById("totalAudio").innerText=audios.length;
+
+showAudios(audios);
 
 });
 
-alert("Ratiba saved");
+function showAudios(list){
+
+let html="";
+
+list.forEach(a=>{
+
+html+=`
+
+<div class="audio">
+
+<b>${a.title}</b><br>
+${a.category}
+
+<br><br>
+
+<button class="edit" onclick="editAudio('${a.id}','${a.title}','${a.desc}','${a.category}')">
+Edit
+</button>
+
+<button class="delete" onclick="deleteAudio('${a.id}')">
+Delete
+</button>
+
+</div>
+
+`;
+
+});
+
+document.getElementById("audioList").innerHTML=html;
 
 }
+
+function deleteAudio(id){
+
+if(confirm("Futa audio hii?")){
+
+db.ref("audios/"+id).remove();
+
+}
+
+}
+
+function editAudio(id,title,desc,category){
+
+editId=id;
+
+document.getElementById("title").value=title;
+document.getElementById("desc").value=desc;
+document.getElementById("category").value=category;
+
+window.scrollTo(0,0);
+
+}
+
+document.getElementById("search").addEventListener("input",function(){
+
+let q=this.value.toLowerCase();
+
+let filtered=audios.filter(a=>
+
+a.title.toLowerCase().includes(q) ||
+a.desc.toLowerCase().includes(q) ||
+a.category.toLowerCase().includes(q)
+
+);
+
+showAudios(filtered);
+
+});
 
 </script>
 
