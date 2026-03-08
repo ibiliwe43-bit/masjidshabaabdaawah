@@ -1,153 +1,183 @@
 <!DOCTYPE html>
 <html>
 <head>
+
+<meta charset="UTF-8">
 <title>Admin Panel</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
 <style>
-body{font-family:Arial;padding:20px;background:#f4f4f4;}
-input,select,textarea{width:100%;padding:8px;margin-bottom:10px;}
-button{padding:8px 15px;background:#00695c;color:white;border:none;border-radius:5px;cursor:pointer;}
-.box{background:white;padding:15px;border-radius:8px;margin-top:15px;}
+
+body{
+font-family:Arial;
+background:#f2f2f2;
+padding:20px;
+}
+
+.box{
+background:white;
+padding:15px;
+margin-bottom:20px;
+border-radius:6px;
+}
+
+input,textarea,select{
+width:100%;
+padding:8px;
+margin:5px 0;
+}
+
+button{
+background:#0b7a3e;
+color:white;
+border:none;
+padding:10px;
+margin-top:10px;
+}
+
 </style>
+
 </head>
+
 <body>
 
 <h2>Admin - Upload Audio</h2>
 
-<input type="text" id="title" placeholder="Jina la Audio">
-<textarea id="description" placeholder="Maelezo"></textarea>
+<div class="box">
 
+Jina la Audio
+<input id="title">
+
+Maelezo
+<textarea id="desc"></textarea>
+
+Category
 <select id="category">
-<option value="darsa">Darsa</option>
-<option value="jumaa">Khutbah za Ijumaa</option>
-<option value="eid">Khutbah za Eid</option>
-<option value="ramadhan">Darsa za Ramadhani</option>
+
+<option>Darsa za Ramadhani</option>
+<option>Khutbah za Ijumaa</option>
+<option>Khutbah za Eid</option>
+<option>Darsa za Jumamosi</option>
+
 </select>
 
-<input type="file" id="audioFile" accept="audio/*">
+Audio File
+<input type="file" id="file">
 
-<button id="uploadBtn">Upload Audio</button>
+<button onclick="upload()">Upload Audio</button>
 
-<hr>
+</div>
 
-<h2>Ratiba ya Swala</h2>
+<div class="box">
 
-<input type="text" id="fajr" placeholder="Fajr">
-<input type="text" id="dhuhr" placeholder="Dhuhr">
-<input type="text" id="asr" placeholder="Asr">
-<input type="text" id="maghrib" placeholder="Maghrib">
-<input type="text" id="isha" placeholder="Isha">
+<h3>Ratiba ya Swala</h3>
 
-<button id="saveRatibaBtn">Save Ratiba</button>
+Fajr Adhana
+<input id="fajrA">
 
-<hr>
+Fajr Iqama
+<input id="fajrI">
 
-<h3>Audio Zote</h3>
-<div id="audioList"></div>
+Dhuhr Adhana
+<input id="dhuhrA">
 
-<script type="module">
+Dhuhr Iqama
+<input id="dhuhrI">
 
-// ===== FIREBASE =====
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+Asr Adhana
+<input id="asrA">
 
-const firebaseConfig = {
-apiKey: "AIzaSyBrgOtZN04zoRlpDzOgHFlK_5HvJW6pxD0",
-authDomain: "masjidshabaab.firebaseapp.com",
-databaseURL: "https://masjidshabaab-default-rtdb.firebaseio.com/",
-projectId: "masjidshabaab",
-storageBucket: "masjidshabaab.firebasestorage.app",
-messagingSenderId: "1069424481338",
-appId: "1:1069424481338:web:4eebe45e31ec3c24aad103"
+Asr Iqama
+<input id="asrI">
+
+Maghrib Adhana
+<input id="maghribA">
+
+Maghrib Iqama
+<input id="maghribI">
+
+Isha Adhana
+<input id="ishaA">
+
+Isha Iqama
+<input id="ishaI">
+
+<button onclick="saveRatiba()">Save Ratiba</button>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+
+var firebaseConfig = {
+
+apiKey:"AIzaSyBrgOtZN04zoRlpDzOgHFlK_5HvJW6pxD0",
+authDomain:"masjidshabaab.firebaseapp.com",
+databaseURL:"https://masjidshabaab-default-rtdb.firebaseio.com/",
+projectId:"masjidshabaab"
+
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+firebase.initializeApp(firebaseConfig);
 
-// ===== CLOUDINARY UPLOAD =====
-async function uploadToCloudinary(file){
-  const cloudName = "drlltmnlb"; // badilisha kama ni tofauti
-  const uploadPreset = "audio_upload";
+const db=firebase.database();
 
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", uploadPreset);
+function upload(){
 
-  const response = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
-    { method: "POST", body: formData }
-  );
+const title=document.getElementById("title").value;
+const desc=document.getElementById("desc").value;
+const category=document.getElementById("category").value;
 
-  const data = await response.json();
-  return data.secure_url;
-}
+const file=document.getElementById("file").files[0];
 
-// ===== WAIT FOR DOM =====
-window.addEventListener("DOMContentLoaded", ()=>{
+const reader=new FileReader();
 
-  const uploadBtn = document.getElementById("uploadBtn");
-  const saveRatibaBtn = document.getElementById("saveRatibaBtn");
+reader.onload=function(){
 
-  // ===== UPLOAD AUDIO =====
-  uploadBtn.addEventListener("click", async ()=>{
-    const file = document.getElementById("audioFile").files[0];
-    if(!file){ alert("Chagua audio kwanza!"); return; }
+db.ref("audios").push({
 
-    const title = document.getElementById("title").value;
-    const description = document.getElementById("description").value;
-    const category = document.getElementById("category").value;
-
-    const audioURL = await uploadToCloudinary(file);
-
-    push(ref(db,"audios"),{
-      title:title,
-      description:description,
-      category:category,
-      url:audioURL,
-      date:Date.now()
-    });
-
-    alert("✅ Audio Imeupload Kikamilifu!");
-    document.getElementById("audioFile").value = "";
-    document.getElementById("title").value = "";
-    document.getElementById("description").value = "";
-  });
-
-  // ===== SAVE RATIBA =====
-  saveRatibaBtn.addEventListener("click", ()=>{
-    set(ref(db,"ratiba"),{
-      fajr:document.getElementById("fajr").value,
-      dhuhr:document.getElementById("dhuhr").value,
-      asr:document.getElementById("asr").value,
-      maghrib:document.getElementById("maghrib").value,
-      isha:document.getElementById("isha").value
-    });
-    alert("✅ Ratiba Imehifadhiwa");
-  });
-
-  // ===== LOAD AUDIO LIST =====
-  const audioList = document.getElementById("audioList");
-
-  onValue(ref(db,"audios"), snapshot=>{
-    audioList.innerHTML = "";
-    snapshot.forEach(child=>{
-      const data = child.val();
-      audioList.innerHTML += `
-        <div class="box">
-          <b>${data.title}</b><br>
-          <small>${data.category}</small><br><br>
-          <button onclick="deleteAudio('${child.key}')">Delete</button>
-        </div>
-      `;
-    });
-  });
+title:title,
+desc:desc,
+category:category,
+url:reader.result
 
 });
 
-// ===== DELETE =====
-window.deleteAudio = function(id){
-  remove(ref(db,"audios/"+id));
-};
+alert("Audio Uploaded");
+
+}
+
+reader.readAsDataURL(file);
+
+}
+
+function saveRatiba(){
+
+db.ref("ratiba").set({
+
+fajrA:document.getElementById("fajrA").value,
+fajrI:document.getElementById("fajrI").value,
+
+dhuhrA:document.getElementById("dhuhrA").value,
+dhuhrI:document.getElementById("dhuhrI").value,
+
+asrA:document.getElementById("asrA").value,
+asrI:document.getElementById("asrI").value,
+
+maghribA:document.getElementById("maghribA").value,
+maghribI:document.getElementById("maghribI").value,
+
+ishaA:document.getElementById("ishaA").value,
+ishaI:document.getElementById("ishaI").value
+
+});
+
+alert("Ratiba saved");
+
+}
 
 </script>
 
