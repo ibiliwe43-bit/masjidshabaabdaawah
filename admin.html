@@ -4,14 +4,15 @@
 
 <meta charset="UTF-8">
 <title>Masjid Admin Panel</title>
+
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
 <style>
 
 body{
 font-family:Arial;
-margin:0;
 background:#f1f1f1;
+margin:0;
 }
 
 .header{
@@ -30,13 +31,14 @@ background:white;
 padding:15px;
 margin-bottom:20px;
 border-radius:8px;
-box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
 input,textarea,select{
 width:100%;
 padding:8px;
-margin:5px 0;
+margin:6px 0;
+border:1px solid #ccc;
+border-radius:5px;
 }
 
 button{
@@ -45,7 +47,7 @@ color:white;
 border:none;
 padding:8px 12px;
 border-radius:5px;
-cursor:pointer;
+margin:3px;
 }
 
 .delete{
@@ -56,18 +58,11 @@ background:red;
 background:orange;
 }
 
-.stats{
-font-size:20px;
-font-weight:bold;
-color:#0b7a3e;
-}
-
-.audio{
+.audioCard{
 background:#fafafa;
-padding:12px;
+padding:10px;
 margin-top:10px;
 border-radius:6px;
-border-left:5px solid #0b7a3e;
 }
 
 </style>
@@ -77,18 +72,12 @@ border-left:5px solid #0b7a3e;
 <body>
 
 <div class="header">
-<h2>Masjid Shabaab Admin</h2>
+
+<h2>Masjid Shabaab Admin Panel</h2>
+
 </div>
 
 <div class="container">
-
-<div class="card">
-<h3>Dashboard</h3>
-
-Audio Zote:
-<div class="stats" id="totalAudio">0</div>
-
-</div>
 
 <div class="card">
 
@@ -103,35 +92,19 @@ Maelezo
 Category
 <select id="category">
 
-<option value="darsa">Darsa za Jumamosi</option>
-<option value="jumaa">Khutbah za Ijumaa</option>
-<option value="eid">Khutbah za Eid</option>
-<option value="ramadhan">Darsa za Ramadhani</option>
+<option>Darsa za Ramadhani</option>
+<option>Khutbah za Ijumaa</option>
+<option>Khutbah za Eid</option>
+<option>Darsa za Jumamosi</option>
 
 </select>
 
-Audio
+Audio File
 <input type="file" id="file">
 
 <audio id="preview" controls style="width:100%;display:none"></audio>
 
-<button onclick="upload()">Upload</button>
-
-</div>
-
-<div class="card">
-
-<h3>Search Audio</h3>
-
-<input id="search" placeholder="Tafuta audio...">
-
-</div>
-
-<div class="card">
-
-<h3>Audio Zote</h3>
-
-<div id="audioList"></div>
+<button onclick="upload()">Upload Audio</button>
 
 </div>
 
@@ -173,6 +146,14 @@ Isha Iqama
 
 </div>
 
+<div class="card">
+
+<h3>Audio Zote</h3>
+
+<div id="audioList"></div>
+
+</div>
+
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -193,7 +174,6 @@ firebase.initializeApp(firebaseConfig);
 
 const db=firebase.database();
 
-let audios=[];
 let editId=null;
 
 document.getElementById("file").addEventListener("change",function(){
@@ -205,6 +185,7 @@ const url=URL.createObjectURL(file);
 const preview=document.getElementById("preview");
 
 preview.src=url;
+
 preview.style.display="block";
 
 });
@@ -217,27 +198,24 @@ const category=document.getElementById("category").value;
 
 const file=document.getElementById("file").files[0];
 
-if(!file){
-alert("Chagua audio kwanza");
-return;
-}
-
 const reader=new FileReader();
 
 reader.onload=function(){
 
 const data={
+
 title:title,
 desc:desc,
 category:category,
 url:reader.result
+
 };
 
 if(editId){
 
 db.ref("audios/"+editId).update(data);
 
-alert("Audio edited");
+alert("Audio imehaririwa");
 
 editId=null;
 
@@ -245,14 +223,9 @@ editId=null;
 
 db.ref("audios").push(data);
 
-alert("Audio uploaded");
+alert("Audio imepakiwa");
 
 }
-
-document.getElementById("title").value="";
-document.getElementById("desc").value="";
-document.getElementById("file").value="";
-document.getElementById("preview").style.display="none";
 
 }
 
@@ -264,46 +237,26 @@ db.ref("audios").on("value",snap=>{
 
 const data=snap.val();
 
-audios=[];
+let html="";
 
 for(let id in data){
 
-audios.push({id,...data[id]});
-
-}
-
-document.getElementById("totalAudio").innerText=audios.length;
-
-showAudios(audios);
-
-});
-
-function showAudios(list){
-
-let html="";
-
-list.forEach(a=>{
+let a=data[id];
 
 html+=`
 
-<div class="audio">
+<div class="audioCard">
 
 <b>${a.title}</b><br>
-Category: ${a.category}
+${a.category}
 
 <br><br>
 
-<audio controls style="width:100%">
-<source src="${a.url}">
-</audio>
-
-<br><br>
-
-<button class="edit" onclick="editAudio('${a.id}','${a.title}','${a.desc}','${a.category}')">
+<button class="edit" onclick="editAudio('${id}','${a.title}','${a.desc}','${a.category}')">
 Edit
 </button>
 
-<button class="delete" onclick="deleteAudio('${a.id}')">
+<button class="delete" onclick="deleteAudio('${id}')">
 Delete
 </button>
 
@@ -311,15 +264,15 @@ Delete
 
 `;
 
-});
+}
 
 document.getElementById("audioList").innerHTML=html;
 
-}
+});
 
 function deleteAudio(id){
 
-if(confirm("Futa audio hii?")){
+if(confirm("Una uhakika unataka kufuta audio hii?")){
 
 db.ref("audios/"+id).remove();
 
@@ -328,8 +281,6 @@ db.ref("audios/"+id).remove();
 }
 
 function editAudio(id,title,desc,category){
-
-if(confirm("Unataka kuhariri audio hii?")){
 
 editId=id;
 
@@ -340,24 +291,6 @@ document.getElementById("category").value=category;
 window.scrollTo(0,0);
 
 }
-
-}
-
-document.getElementById("search").addEventListener("input",function(){
-
-let q=this.value.toLowerCase();
-
-let filtered=audios.filter(a=>
-
-a.title.toLowerCase().includes(q) ||
-a.desc.toLowerCase().includes(q) ||
-a.category.toLowerCase().includes(q)
-
-);
-
-showAudios(filtered);
-
-});
 
 function saveRatiba(){
 
@@ -380,7 +313,7 @@ ishaI:document.getElementById("ishaI").value
 
 });
 
-alert("Ratiba saved");
+alert("Ratiba imehifadhiwa");
 
 }
 
