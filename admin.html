@@ -336,7 +336,33 @@ showAudios(filtered);
 
 });
 
+function saveRatiba(){
+
+db.ref("ratiba").set({
+
+fajrA:document.getElementById("fajrA").value,
+fajrI:document.getElementById("fajrI").value,
+
+dhuhrA:document.getElementById("dhuhrA").value,
+dhuhrI:document.getElementById("dhuhrI").value,
+
+asrA:document.getElementById("asrA").value,
+asrI:document.getElementById("asrI").value,
+
+maghribA:document.getElementById("maghribA").value,
+maghribI:document.getElementById("maghribI").value,
+
+ishaA:document.getElementById("ishaA").value,
+ishaI:document.getElementById("ishaI").value
+
+});
+
+alert("Ratiba saved");
+
+}
+
 </script>
+  
 
 </body>
 </html>
