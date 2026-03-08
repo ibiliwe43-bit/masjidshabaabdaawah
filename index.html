@@ -1,219 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="sw">
 <head>
+
 <meta charset="UTF-8">
 <title>Masjid Shabaab Daawah</title>
 
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<style>
-
-body{
-font-family:Arial;
-margin:0;
-background:#f1f1f1;
-}
-
-.header{
-background:#0b7a3e;
-color:white;
-text-align:center;
-padding:15px;
-}
-
-.mosque{
-width:100%;
-height:200px;
-object-fit:cover;
-}
-
-.search{
-width:90%;
-margin:15px auto;
-display:block;
-padding:10px;
-font-size:16px;
-border-radius:6px;
-border:1px solid #ccc;
-}
-
-.section{
-background:white;
-margin:15px;
-padding:15px;
-border-radius:8px;
-}
-
-.audio{
-background:#fafafa;
-padding:10px;
-margin-top:10px;
-border-radius:6px;
-}
-
-.category{
-color:#0b7a3e;
-font-weight:bold;
-}
-
-button{
-background:#0b7a3e;
-color:white;
-border:none;
-padding:8px 12px;
-border-radius:5px;
-}
-
-.footer{
-text-align:center;
-padding:20px;
-color:#555;
-font-size:14px;
-}
-
-  .categories{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-}
-
-.cat-btn{
-display:block;
-background:#0a7d3b;
-color:white;
-padding:15px;
-text-align:center;
-border-radius:8px;
-text-decoration:none;
-font-weight:bold;
-}
-
-.cat-btn:hover{
-background:#095f2d;
-}
-
-  .categories{
-display:flex;
-flex-direction:column;
-gap:12px;
-}
-
-.cat-btn{
-display:block;
-background:#0a7d3b;
-color:white;
-padding:15px;
-border-radius:8px;
-text-decoration:none;
-font-weight:bold;
-box-shadow:0 2px 5px rgba(0,0,0,0.1);
-}
-
-.cat-btn:hover{
-background:#095f2d;
-}
-</style>
+<link rel="stylesheet" href="style.css">
 
 </head>
 
 <body>
 
-<img src="mosque.jpg" class="mosque">
+<header>
 
-<div class="header">
+<h1>Masjid Shabaab Daawah</h1>
 
-<h2>MASJID SHABAAB DAAWAH</h2>
-Buhongwa – Mwanza
+<p>Karibu usikilize darsa na khutbah</p>
 
-</div>
+</header>
 
-<input type="text" id="search" class="search" placeholder="Tafuta audio...">
 
-<div class="section">
+<section class="categories">
 
-<h3>Ratiba ya Swala</h3>
+<button onclick="filterCategory('all')">Zote</button>
 
-<div id="ratiba"></div>
+<button onclick="filterCategory('darsa')">Darsa</button>
 
-</div>
+<button onclick="filterCategory('jumaa')">Khutbah za Ijumaa</button>
 
-<div class="section">
-<h3>Vipengele</h3>
+<button onclick="filterCategory('eid')">Khutbah za Eid</button>
 
-<div class="categories">
+<button onclick="filterCategory('ramadhan')">Ramadhan</button>
 
-<a href="category.html?type=darsa" class="cat-btn">
-Darsa za Jumamosi & Jumapili
-</a>
+</section>
 
-<a href="category.html?type=jumaa" class="cat-btn">
-Khutbah za Ijumaa
-</a>
 
-<a href="category.html?type=eid" class="cat-btn">
-Khutbah za Eid
-</a>
+<section id="audioList" class="audioList">
 
-<a href="category.html?type=ramadhan" class="cat-btn">
-Darsa za Ramadhani
-</a>
+Loading...
 
-</div>
-</div>
+</section>
 
-<div class="section">
 
-<h3>Audio</h3>
+<footer>
 
-<div id="audioList"></div>
+<p>© Masjid Shabaab Daawah</p>
 
-</div>
+</footer>
 
-<div class="footer">
-
-© 2026 Masjid Shabaab Daawah<br>
-Buhongwa – Mwanza<br>
-Designed for Daawah Purpose
-
-</div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
 
 <script>
 
 var firebaseConfig = {
 
 apiKey:"AIzaSyBrgOtZN04zoRlpDzOgHFlK_5HvJW6pxD0",
+
 authDomain:"masjidshabaab.firebaseapp.com",
+
 databaseURL:"https://masjidshabaab-default-rtdb.firebaseio.com/",
+
 projectId:"masjidshabaab"
 
 };
 
 firebase.initializeApp(firebaseConfig);
 
-const db = firebase.database();
+const db=firebase.database();
 
 let audios=[];
 
-db.ref("ratiba").on("value",snap=>{
-
-const r=snap.val();
-
-if(!r)return;
-
-document.getElementById("ratiba").innerHTML=`
-
-Fajr – ADHANA ${r.fajrA} IQAMA ${r.fajrI}<br>
-Dhuhr – ADHANA ${r.dhuhrA} IQAMA ${r.dhuhrI}<br>
-Asr – ADHANA ${r.asrA} IQAMA ${r.asrI}<br>
-Maghrib – ADHANA ${r.maghribA} IQAMA ${r.maghribI}<br>
-Isha – ADHANA ${r.ishaA} IQAMA ${r.ishaI}
-
-`;
-
-});
 
 db.ref("audios").on("value",snap=>{
 
@@ -223,15 +85,14 @@ audios=[];
 
 for(let id in data){
 
-audios.push(data[id]);
+audios.push({id,...data[id]});
 
 }
-
-audios.reverse();
 
 showAudios(audios);
 
 });
+
 
 function showAudios(list){
 
@@ -243,21 +104,15 @@ html+=`
 
 <div class="audio">
 
-<div class="category">${a.category}</div>
-
-<h4>${a.title}</h4>
+<h3>${a.title}</h3>
 
 <p>${a.desc}</p>
 
-<audio controls style="width:100%">
+<audio controls>
+
 <source src="${a.url}">
+
 </audio>
-
-<br><br>
-
-<a href="${a.url}" download>
-<button>Download</button>
-</a>
 
 </div>
 
@@ -269,23 +124,25 @@ document.getElementById("audioList").innerHTML=html;
 
 }
 
-document.getElementById("search").addEventListener("input",function(){
 
-let q=this.value.toLowerCase();
+function filterCategory(cat){
 
-let filtered=audios.filter(a=>
+if(cat==="all"){
 
-a.title.toLowerCase().includes(q) ||
-a.desc.toLowerCase().includes(q) ||
-a.category.toLowerCase().includes(q)
+showAudios(audios);
 
-);
+return;
+
+}
+
+let filtered=audios.filter(a=>a.category===cat);
 
 showAudios(filtered);
 
-});
+}
 
 </script>
 
 </body>
+
 </html>
