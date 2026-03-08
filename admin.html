@@ -1,193 +1,158 @@
 <!DOCTYPE html>
-<html lang="sw">
+<html>
 <head>
+
 <meta charset="UTF-8">
-<title>Masjid Admin Panel Pro</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body{font-family:Arial;margin:0;padding:20px;background:#f4f4f4;}
-.header{background:#0b7a3e;color:white;padding:15px;text-align:center;border-radius:8px;}
-.container{padding:15px;}
-.card{background:white;padding:15px;margin-bottom:20px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
-input,textarea,select{width:100%;padding:8px;margin:5px 0;}
-button{background:#0b7a3e;color:white;border:none;padding:8px 12px;border-radius:5px;cursor:pointer;}
-.delete{background:red;}
-.edit{background:orange;}
-.audio{background:#fafafa;padding:10px;margin-top:10px;border-radius:6px;}
-.stats{font-size:18px;font-weight:bold;color:#0b7a3e;}
-</style>
+<title>Admin Panel</title>
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link rel="stylesheet" href="style.css">
+
 </head>
+
 <body>
 
 <div class="header">
-<h2>Masjid Shabaab Admin Panel Pro</h2>
+<h2>Admin Panel</h2>
 </div>
 
 <div class="container">
 
-<!-- DASHBOARD -->
 <div class="card">
-<h3>Dashboard</h3>
-Audio Zote: <span class="stats" id="totalAudio">0</span>
-</div>
 
-<!-- UPLOAD AUDIO -->
-<div class="card">
 <h3>Upload Audio</h3>
+
 Jina la Audio
-<input id="title" placeholder="Jina la Audio">
+<input id="title">
+
 Maelezo
-<textarea id="desc" placeholder="Maelezo ya Audio"></textarea>
-Category 
+<textarea id="desc"></textarea>
+
+Category
 <select id="category">
-<option value="darsa">Darsa za Jumamosi</option>
+
+<option value="darsa">Darsa</option>
 <option value="jumaa">Khutbah za Ijumaa</option>
 <option value="eid">Khutbah za Eid</option>
-<option value="ramadhan">Darsa za Ramadhani</option>
+<option value="ramadhan">Ramadhan</option>
+
 </select>
+
 Audio
 <input type="file" id="file">
-<audio id="preview" controls style="width:100%;display:none"></audio>
-<button onclick="upload()">Upload Audio</button>
+
+<button onclick="upload()">Upload</button>
+
 </div>
 
-<!-- SEARCH AUDIO -->
 <div class="card">
-<h3>Search Audio</h3>
-<input id="search" placeholder="Tafuta audio...">
-</div>
 
-<!-- AUDIO LIST -->
-<div class="card">
 <h3>Audio Zote</h3>
+
 <div id="audioList"></div>
+
 </div>
 
-<!-- RATIBA YA SWALA -->
-<div class="card">
-<h3>Ratiba ya Swala</h3>
-Fajr Adhana <input id="fajrA">
-Fajr Iqama <input id="fajrI">
-Dhuhr Adhana <input id="dhuhrA">
-Dhuhr Iqama <input id="dhuhrI">
-Asr Adhana <input id="asrA">
-Asr Iqama <input id="asrI">
-Maghrib Adhana <input id="maghribA">
-Maghrib Iqama <input id="maghribI">
-Isha Adhana <input id="ishaA">
-Isha Iqama <input id="ishaI">
-<button onclick="saveRatiba()">Save Ratiba</button>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
+
 var firebaseConfig = {
+
 apiKey:"AIzaSyBrgOtZN04zoRlpDzOgHFlK_5HvJW6pxD0",
 authDomain:"masjidshabaab.firebaseapp.com",
 databaseURL:"https://masjidshabaab-default-rtdb.firebaseio.com/",
 projectId:"masjidshabaab"
+
 };
+
 firebase.initializeApp(firebaseConfig);
+
 const db=firebase.database();
 
-let audios=[];
-let editId=null;
-
-// PREVIEW AUDIO
-document.getElementById("file").addEventListener("change",function(){
-const file=this.files[0];
-if(file){
-const url=URL.createObjectURL(file);
-const preview=document.getElementById("preview");
-preview.src=url;
-preview.style.display="block";
-}
-});
-
-// UPLOAD OR EDIT AUDIO
 function upload(){
+
 const title=document.getElementById("title").value;
 const desc=document.getElementById("desc").value;
 const category=document.getElementById("category").value;
+
 const file=document.getElementById("file").files[0];
 
-if(!file){ alert("Chagua audio kwanza!"); return; }
-
 const reader=new FileReader();
+
 reader.onload=function(){
-const data={title:title,desc:desc,category:category,url:reader.result};
-if(editId){
-db.ref("audios/"+editId).update(data);
-alert("Audio edited ✅");
-editId=null;
-}else{
-db.ref("audios").push(data);
-alert("Audio uploaded ✅");
+
+db.ref("audios").push({
+
+title:title,
+desc:desc,
+category:category,
+url:reader.result
+
+});
+
+alert("Audio uploaded");
+
 }
-};
+
 reader.readAsDataURL(file);
+
 }
 
-// LOAD AUDIO LIST
 db.ref("audios").on("value",snap=>{
+
 const data=snap.val();
-audios=[];
-for(let id in data){ audios.push({id,...data[id]}); }
-document.getElementById("totalAudio").innerText=audios.length;
-showAudios(audios);
-});
 
-// SHOW AUDIO LIST
-function showAudios(list){
 let html="";
-list.forEach(a=>{
-html+=`<div class="audio">
-<b>${a.title}</b><br>
-${a.category}<br><br>
-<button class="edit" onclick="editAudio('${a.id}','${a.title}','${a.desc}','${a.category}')">Edit</button>
-<button class="delete" onclick="deleteAudio('${a.id}')">Delete</button>
-</div>`;
-});
+
+if(!data){
+
+html="Hakuna audio bado";
+
+}else{
+
+for(let id in data){
+
+let a=data[id];
+
+html+=`
+
+<div class="audio">
+
+<b>${a.title}</b>
+<br>
+
+<button onclick="deleteAudio('${id}')">
+Delete
+</button>
+
+</div>
+
+`;
+
+}
+
+}
+
 document.getElementById("audioList").innerHTML=html;
-}
 
-// DELETE AUDIO
-function deleteAudio(id){ if(confirm("Futa audio hii?")) db.ref("audios/"+id).remove(); }
-
-// EDIT AUDIO
-function editAudio(id,title,desc,category){
-editId=id;
-document.getElementById("title").value=title;
-document.getElementById("desc").value=desc;
-document.getElementById("category").value=category;
-window.scrollTo(0,0);
-}
-
-// SEARCH AUDIO
-document.getElementById("search").addEventListener("input",function(){
-let q=this.value.toLowerCase();
-let filtered=audios.filter(a=> a.title.toLowerCase().includes(q) || a.desc.toLowerCase().includes(q) || a.category.toLowerCase().includes(q) );
-showAudios(filtered);
 });
 
-// SAVE RATIBA
-function saveRatiba(){
-db.ref("ratiba").set({
-fajrA:document.getElementById("fajrA").value,
-fajrI:document.getElementById("fajrI").value,
-dhuhrA:document.getElementById("dhuhrA").value,
-dhuhrI:document.getElementById("dhuhrI").value,
-asrA:document.getElementById("asrA").value,
-asrI:document.getElementById("asrI").value,
-maghribA:document.getElementById("maghribA").value,
-maghribI:document.getElementById("maghribI").value,
-ishaA:document.getElementById("ishaA").value,
-ishaI:document.getElementById("ishaI").value
-});
-alert("Ratiba saved ✅");
+function deleteAudio(id){
+
+if(confirm("Futa audio hii?")){
+
+db.ref("audios/"+id).remove();
+
 }
+
+}
+
 </script>
+
 </body>
 </html>
